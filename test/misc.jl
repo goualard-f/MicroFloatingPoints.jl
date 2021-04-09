@@ -1,12 +1,12 @@
 @testset "double_fields" begin
-    dfields = MicroFloatingPoint.double_fields
+    dfields = MicroFloatingPoints.double_fields
     @test dfields(0.0) == (0,0,0)
     @test dfields(-1.0) == (1, 1023, 0)
     @test dfields(Inf) == (0, 2047, 0)
 end;
 
 @testset "nb_fp_numbers" begin
-    nbfp = MicroFloatingPoint.nb_fp_numbers
+    nbfp = MicroFloatingPoints.nb_fp_numbers
     F22 = Floatmu{2,2}
     F823 = Floatmu{8,23}
     @test nbfp(F823(-0.0),F823(0.0)) == 1

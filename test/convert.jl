@@ -1,5 +1,5 @@
 @testset "float64_to_uint64mu" begin
-    fl2uint64 = MicroFloatingPoint.float64_to_uint64mu
+    fl2uint64 = MicroFloatingPoints.float64_to_uint64mu
     # Positives
     @test fl2uint64(0.0,2,2) == 0
     @test fl2uint64(0.1,2,2) == 0

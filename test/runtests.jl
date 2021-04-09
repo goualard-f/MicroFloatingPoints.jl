@@ -1,28 +1,28 @@
-# MicroFloatingPoint --
+# MicroFloatingPoints --
 #
 #	Copyright 2019--2021 University of Nantes, France.
 #
-#	This file is part of the MicroFloatingPoint library.
+#	This file is part of the MicroFloatingPoints library.
 #
-#	The MicroFloatingPoint library is free software; you can redistribute it and/or
+#	The MicroFloatingPoints library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public License as published
 # by the Free Software Foundation; either version 3 of the License, or (at your
 #	option) any later version.
 #	
-#	The MicroFloatingPoint library is distributed in the hope that it will be useful,
+#	The MicroFloatingPoints library is distributed in the hope that it will be useful,
 # but	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 #	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 #	for more details.
 #	
 #	You should have received copies of the GNU General Public License and the
-#	GNU Lesser General Public License along with the MicroFloatingPoint Library.
+#	GNU Lesser General Public License along with the MicroFloatingPoints Library.
 # If not,	see https://www.gnu.org/licenses/.
 
 using Test
 using TestSetExtensions
 
 push!(LOAD_PATH,pwd()*"/../src/")
-using MicroFloatingPoint
+using MicroFloatingPoints
 
 # Call "julia runtests.jl [tests1] [tests2] ..."
 # to launch only the tests in `test1.jl`, `test2.jl`, ...

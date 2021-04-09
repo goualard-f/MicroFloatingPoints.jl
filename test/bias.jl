@@ -1,5 +1,5 @@
 @testset "bias" begin
-    bias = MicroFloatingPoint.bias
+    bias = MicroFloatingPoints.bias
     
     @test bias(Floatmu{2,2}) == 1
     @test bias(Floatmu{8,23}) == 127
