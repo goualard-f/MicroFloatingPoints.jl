@@ -20,11 +20,13 @@
 
 module MicroFloatingPoints
 
-import Base.convert, Base.show
+import Base.convert, Base.show, Base.Float16, Base.Float32, Base.Float64
 import Base.sign, Base.signbit, Base.bitstring
 import Base.typemin, Base.typemax, Base.maxintfloat, Base.eps
-import Base.floatmax, Base.floatmin, Base.maxintfloat
+import Base.floatmax, Base.floatmin, Base.maxintfloat, Base.precision
 import Base.isinf, Base.isfinite, Base.isnan, Base.issubnormal
+import Base: exponent_max, exponent_raw_max
+import Base.round, Base.trunc
 import Base.parse, Base.tryparse
 import Base.prevfloat, Base.nextfloat
 import Base.promote_rule
@@ -33,10 +35,24 @@ import Base: ==, !=, <, <=, >, >=
 import Base: cos, sin, tan, exp, log, sqrt, log2
 import Base.iterate, Base.length, Base.eltype
 import Base.prevfloat, Base.nextfloat
+import Base.decompose
 
 export Floatmu
 export μ, λ, NaNμ, Infμ
 export FloatmuIterator
+export isinexact, errorsign, reset_inexact, inexact
+
+
+"""
+    inexact_flag
+
+Flag set to `true` if the latest computation led to some rounding. This is a sticky flag, which must be
+explictly reset.
+
+See [`reset_inexact()`](@ref)
+"""
+inexact_flag = false
+
 
 @doc raw"""
     Floatmu{szE,szf} <: AbstractFloat
@@ -67,27 +83,34 @@ true
 ```
 """
 struct Floatmu{szE,szf} <: AbstractFloat
-    """Representation of the Floatmu as a 64 bits unsigned integer.
-    The various fields (s,e,f) are aligned to the right of the integer.
-    """
-    v::UInt64
+    # Representation of the Floatmu as a 32 bits unsigned integer.
+    # The various fields (s,e,f) are aligned to the right of the integer.
+    v::UInt32
+    # Is the value an approximation by default (-1), excess (+1) or the exact value (0)
+    inexact::Int32
     function Floatmu{szE,szf}(x::Float64) where {szE,szf}
         @assert szE isa Integer "Exponent size must be an integer!"
         @assert szf isa Integer "Fractional part size must be an integer!"
         @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
-        return new{szE,szf}(float64_to_uint64mu(x, szE, szf))
+        (val,rnd) = float64_to_uint32mu(x, szE, szf)
+        global inexact_flag = inexact_flag || (rnd != 0)
+        return new{szE,szf}(val,rnd)
     end
     function Floatmu{szE,szf}(x::Int64) where {szE,szf}
         @assert szE isa Integer "Exponent size must be an integer!"
         @assert szf isa Integer "Fractional part size must be an integer!"
         @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
-        return new{szE,szf}(float64_to_uint64mu(Float64(x),szE,szf))
+        (val,rnd) = float64_to_uint32mu(Float64(x), szE, szf)
+        global inexact_flag = inexact_flag || (rnd != 0)
+        return new{szE,szf}(val,rnd)
     end
     function Floatmu{szE,szf}(x::Floatmu{szEb,szfb}) where {szE,szf,szEb,szfb}
         @assert szE isa Integer "Exponent size must be an integer!"
         @assert szf isa Integer "Fractional part size must be an integer!"
         @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
-        return new{szE,szf}(float64_to_uint64mu(convert(Float64,x),szE,szf))
+        (val,rnd) = float64_to_uint32mu(convert(Float64,x),szE,szf)
+        global inexact_flag = inexact_flag || (rnd != 0)
+        return new{szE,szf}(val, rnd)
     end
     """
         Constructor for internal use only, when `x` is known to be 
@@ -95,11 +118,19 @@ struct Floatmu{szE,szf} <: AbstractFloat
         The `dummy` parameter serves only to differentiate this constructor
         from the others. Use `nothing` to signal its uselessness.
     """
-    function Floatmu{szE,szf}(x::UInt64, dummy) where {szE,szf}
+    function Floatmu{szE,szf}(x::UInt32, dummy) where {szE,szf}
         @assert szE isa Integer "Exponent size must be an integer!"
         @assert szf isa Integer "Fractional part size must be an integer!"
         @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
-        return new{szE,szf}(x)
+        return new{szE,szf}(x,0)
+    end
+    function Floatmu{szE,szf}(x::Tuple{UInt32,Int64}, dummy) where {szE,szf}
+        @assert szE isa Integer "Exponent size must be an integer!"
+        @assert szf isa Integer "Fractional part size must be an integer!"
+        @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
+        (val,rnd) = x
+        global inexact_flag = inexact_flag || (rnd != 0)
+        return new{szE,szf}(val,rnd)
     end
 end
 
@@ -111,25 +142,31 @@ promote_rule(::Type{Float16},::Type{Floatmu{szE, szf}}) where {szE,szf} = Floatm
 promote_rule(::Type{Floatmu{szEa, szfa}},::Type{Floatmu{szEb, szfb}}) where {szEa,szfa, szEb, szfb} = Floatmu{max(szEa,szEb),max(szfa,szfb)}
 
 # Mask to retrieve the fractional part (internal use)
-fmask(::Type{Floatmu{szE,szf}}) where {szE, szf}  = UInt64((UInt64(1) << szf) - 1)
+significand_mask(::Type{Floatmu{szE,szf}}) where {szE, szf}  = UInt32((UInt32(1) << szf) - 1)
 # Mask to retrieve the exponent part (internal use)
-Emask(::Type{Floatmu{szE,szf}}) where {szE, szf} = UInt64((1 << UInt64(szE))-1) << UInt64(szf)
+exponent_mask(::Type{Floatmu{szE,szf}}) where {szE, szf} = UInt32((UInt32(1) << UInt32(szE))-1) << UInt32(szf)
 # Mask to retrieve the sign part (internal use)
-smask(::Type{Floatmu{szE,szf}}) where {szE, szf} = UInt64(1 << (UInt64(szE)+UInt64(szf)))
+sign_mask(::Type{Floatmu{szE,szf}}) where {szE, szf} = UInt32(1) << (UInt32(szE)+UInt32(szf))
+
+
+precision(::Type{Floatmu{szE,szf}}) where {szE,szf} = UInt32(szf+1)
 
 """
     Emax(::Type{Floatmu{szE,szf}}) where {szE, szf}
 
 Maximum unbiased exponent for a `Floatmu{szE,szf}` (**internal use**)
 """
-Emax(::Type{Floatmu{szE,szf}}) where {szE, szf} = 2^(Int64(szE)-1)-1
+Emax(::Type{Floatmu{szE,szf}}) where {szE, szf} = UInt32(2^(UInt32(szE)-1)-1)
+
+exponent_max(::Type{Floatmu{szE,szf}}) where {szE, szf} = Emax(Floatmu{szE,szf})
+exponent_raw_max(::Type{Floatmu{szE,szf}}) where {szE, szf} = exponent_mask(Floatmu{szE,szf}) >> szf
 
 """
     Emin(::Type{Floatmu{szE,szf}}) where {szE, szf}
 
 Minimum unbiased exponent for a `Floatmu{szE,szf}` (**internal use**)
 """
-Emin(::Type{Floatmu{szE,szf}}) where {szE, szf} = 1 - Emax(Floatmu{szE,szf})
+Emin(::Type{Floatmu{szE,szf}}) where {szE, szf} = Int32(1 - Emax(Floatmu{szE,szf}))
 
 """
     bias(::Type{Floatmu{szE,szf}}) where {szE, szf}
@@ -149,7 +186,7 @@ julia> Infμ(Floatmu{8,23}) == Inf32
 true
 ```
 """
-Infμ(::Type{Floatmu{szE,szf}}) where {szE, szf} = Floatmu{szE,szf}(Emask(Floatmu{szE,szf}),nothing)
+Infμ(::Type{Floatmu{szE,szf}}) where {szE, szf} = Floatmu{szE,szf}(exponent_mask(Floatmu{szE,szf}),nothing)
 
 """
     NaNμ(::Type{Floatmu{szE,szf}}) where {szE, szf}
@@ -167,7 +204,7 @@ julia> NaNμ(Floatmu{2,2})
 NaNμ{2,2}
 ```
 """
-NaNμ(::Type{Floatmu{szE,szf}}) where {szE, szf} = Floatmu{szE,szf}(Emask(Floatmu{szE,szf}) | (1<<(UInt64(szf)-1)),nothing)
+NaNμ(::Type{Floatmu{szE,szf}}) where {szE, szf} = Floatmu{szE,szf}(exponent_mask(Floatmu{szE,szf}) | (UInt32(1) << (UInt32(szf)-1)),nothing)
 
 """
     eps(::Type{Floatmu{szE,szf}})  where {szE,szf}
@@ -191,7 +228,7 @@ function eps(::Type{Floatmu{szE,szf}})  where {szE,szf}
     # The epsilon is equal to 2^-szf
     # We do not create the bit representation directly to avoid
     # complications when the epsilon is subnormal (e.g., with Floatmu{2,2})
-    v = 2.0^-Int64(szf)
+    v = 2.0^-Int32(szf)
     return Floatmu{szE,szf}(v)
 end
 
@@ -225,7 +262,7 @@ julia> μ(Floatmu{2,2})
 """
 function μ(::Type{Floatmu{szE,szf}})  where {szE,szf}
     # μ has the form: 0 000...00 000...001
-    return Floatmu{szE,szf}(UInt64(1),nothing)
+    return Floatmu{szE,szf}(UInt32(1),nothing)
 end
 
 
@@ -255,11 +292,11 @@ function sign(x::Floatmu{szE,szf}) where {szE, szf}
     if isnan(x)
         return NaNμ(Floatmu{szE,szf})
     end
-    if (x.v & ~smask(Floatmu{szE,szf})) == 0
+    if (x.v & ~sign_mask(Floatmu{szE,szf})) == 0
         return x
     else
         # Return ±Floatmu{szE,szf}(1.0)
-        return Floatmu{szE,szf}((x.v & smask(Floatmu{szE,szf})) | (bias(Floatmu{szE,szf}) << UInt64(szf)), nothing)
+        return Floatmu{szE,szf}((x.v & sign_mask(Floatmu{szE,szf})) | (bias(Floatmu{szE,szf}) << UInt32(szf)), nothing)
     end
 end
 
@@ -286,7 +323,7 @@ true
 ```
 """
 function signbit(x::Floatmu{szE,szf}) where {szE, szf}
-    return (x.v & smask(Floatmu{szE,szf})) != 0
+    return (x.v & sign_mask(Floatmu{szE,szf})) != 0
 end
 
 
@@ -308,8 +345,8 @@ true
 function isnan(x::Floatmu{szE,szf}) where {szE,szf}
     # A `Floatmu` is an NaN if its exponent has only ones and
     # the fractional part is not entirely made of zeroes
-    return ((x.v & Emask(Floatmu{szE,szf})) == Emask(Floatmu{szE,szf})) &&
-        ((x.v & fmask(Floatmu{szE,szf})) != 0)
+    return ((x.v & exponent_mask(Floatmu{szE,szf})) == exponent_mask(Floatmu{szE,szf})) &&
+        ((x.v & significand_mask(Floatmu{szE,szf})) != 0)
 end
 
 """
@@ -332,8 +369,8 @@ true
 function isinf(x::Floatmu{szE,szf}) where {szE,szf}
     # A `Floatmu` is infinite if its exponent has only ones and
     # the fractional part is made only of zeroes
-    return ((x.v & Emask(Floatmu{szE,szf})) == Emask(Floatmu{szE,szf})) &&
-        ((x.v & fmask(Floatmu{szE,szf})) == 0)    
+    return ((x.v & exponent_mask(Floatmu{szE,szf})) == exponent_mask(Floatmu{szE,szf})) &&
+        ((x.v & significand_mask(Floatmu{szE,szf})) == 0)    
 end
 
 """
@@ -355,7 +392,7 @@ false
 """
 function isfinite(x::Floatmu{szE,szf}) where {szE,szf}
     # A `Floatmu` is finite if its exponent is not entirely made of ones
-    return x.v & Emask(Floatmu{szE,szf}) != Emask(Floatmu{szE,szf})
+    return x.v & exponent_mask(Floatmu{szE,szf}) != exponent_mask(Floatmu{szE,szf})
 end
 
 """
@@ -378,8 +415,8 @@ false
 function issubnormal(x::Floatmu{szE,szf}) where {szE,szf}
     # A `Floatmu` is subnormal if its biased exponent is
     # zero and its fractional part is not zero.
-    return ((x.v & Emask(Floatmu{szE,szf})) == 0) &&
-        ((x.v & fmask(Floatmu{szE,szf})) != 0)
+    return ((x.v & exponent_mask(Floatmu{szE,szf})) == 0) &&
+        ((x.v & significand_mask(Floatmu{szE,szf})) != 0)
 end
 
 
@@ -404,8 +441,8 @@ function floatmax(::Type{Floatmu{szE,szf}})  where {szE,szf}
     # 0 111...110 11111...111
     # where the exponent is one less than 2^szE-1
     e = Emax(Floatmu{szE,szf}) + bias(Floatmu{szE,szf})
-    f = fmask(Floatmu{szE,szf})
-    return  Floatmu{szE,szf}((e << UInt64(szf)) | f, nothing)
+    f = significand_mask(Floatmu{szE,szf})
+    return  Floatmu{szE,szf}((e << UInt32(szf)) | f, nothing)
 end
 
 """
@@ -424,7 +461,7 @@ true
 """
 function floatmin(::Type{Floatmu{szE,szf}})  where {szE,szf}
     # λ is of the form: 0 000...001 000...0000
-    return Floatmu{szE,szf}(UInt64(1 << UInt64(szf)), nothing)
+    return Floatmu{szE,szf}(UInt32(UInt32(1) << UInt32(szf)), nothing)
 end
 
 """
@@ -482,7 +519,7 @@ true
 ```
 """
 function maxintfloat(::Type{Floatmu{szE,szf}})  where {szE,szf}
-    m = Float64(UInt64(1) << (UInt64(szf)+1))
+    m = Float64(UInt32(1) << (UInt32(szf)+1))
     if m > floatmax(Floatmu{szE,szf})
         return Infμ(Floatmu{szE,szf})
     else
@@ -497,8 +534,8 @@ Return the sign, biased exponent, and fractional part of a Float64 number (**int
 """
 function double_fields(x::Float64)
     v = reinterpret(UInt64,x)
-    s = (v & 0x8000000000000000) >> 63
-    e = (v & 0x7ff0000000000000) >> 52
+    s = ((v & 0x8000000000000000) >> 63) % UInt32
+    e = ((v & 0x7ff0000000000000) >> 52) % UInt32
     f=  v & 0x000fffffffffffff
     return (s,e,f)
 end
@@ -508,9 +545,10 @@ end
     roundfrac(f,szf)
 
 Round to nearest-even a 52 bits fractional part to `szf` bits 
-Return a pair composed of the rounded fractional part and a correction to the exponent
-if a bit from the fractional part spilled into the integer part (**internal use**)
-  
+Return a triplet composed of the rounded fractional part, a correction to the exponent
+if a bit from the fractional part spilled into the integer part, and a rounding direction
+(by default: -1, by excess: 1, no rounding: 0) if some rounding had to take place. 
+(**internal use**)
 """
 function roundfrac(f,szf)
     # Creating the mask for the bits of `f` we cannot store
@@ -523,40 +561,45 @@ function roundfrac(f,szf)
     f &= ~masktrailing
     
     if tailbits == lsb/2 # Halfway between two representable floats
-        if f & lsb != 0 # Rounding to even
+        if f & lsb != 0 
+            # Rounding by excess to the next float due to the "even" rule
             newf = f+lsb
             if newf == 0x0010000000000000
-                return (0, 1)
+                return (0, 1, 1)
             else
-                return (newf >> (52-szf), 0)
+                return (newf >> (52-szf), 0, 1)
             end
         else
-            return (f >> (52-szf), 0)
+            # Rounding by default due to the "even" rule
+            return (f >> (52-szf), 0, -1)
         end
     end
     if tailbits < lsb/2
-        return (f >> (52-szf), 0)
+        # Rounding by default
+        return (f >> (52-szf), 0, ifelse(tailbits == 0,0,-1))
     end
     # tailbits > lsb/2
+    # Rounding by excess
     newf = f+lsb
     if newf == 0x0010000000000000
-        return (0, 1)
+        return (0, 1, 1)
     else
-        return (newf >> (52-szf), 0)
+        return (newf >> (52-szf), 0, 1)
     end
 end
 
 """
-    float64_to_uint64mu(x::Float64,szE,szf)
+    float64_to_uint32mu(x::Float64,szE,szf)
 
 Round `x` to the precision of a `Floatmu{szE,szf}` and 
-return the bits representation right-aligned in a `UInt64`.
+return a pair composed of the bits representation right-aligned in a `UInt32` together
+with a rounding direction if rounding took place (by default: -1, by excess: 1, no rounding: 0)
 (**internal use**)
 """
-function float64_to_uint64mu(x::Float64,szE,szf)::UInt64
+function float64_to_uint32mu(x::Float64,szE,szf)::Tuple{UInt32,Int64}
     if isnan(x)
         # NaNμ{szE,szf}: 0 111...11 1000...00
-        return Emask(Floatmu{szE,szf}) | (1 << (UInt64(szf)-1))
+        return (exponent_mask(Floatmu{szE,szf}) | (UInt32(1) << (UInt32(szf)-1)),0)
     else
         absx = abs(x)
         # if |x| is greater or equal to floatmax(Floatmu{szE,szf} + half the distance
@@ -564,19 +607,23 @@ function float64_to_uint64mu(x::Float64,szE,szf)::UInt64
         # round to Infμ{szE,szf}
         rndpoint = (2.0-2.0^(-Int64(szf)-1))*2.0^Emax(Floatmu{szE,szf})
         if absx >= rndpoint
-            s = (x < 0) ? 1 << (UInt64(szE)+UInt64(szf)) : 0
-            e = Emask(Floatmu{szE,szf})
-            return (s | e) # Infμ{szE,szf}
+            s = (x < 0) ? UInt32(1) << (UInt32(szE)+UInt32(szf)) : 0
+            e = exponent_mask(Floatmu{szE,szf})
+            return ((s | e),ifelse(isinf(x), 0, signbit(x) ? -1 : 1)) # Infμ{szE,szf}
         else
             (s,e,f) = double_fields(x)
             # Should we round to some subnormal `Floatmu{szE,szf}`?
-            # λ = 2^-Emin{szE,szf}
+            # λ = 2^Emin{szE,szf}
             if absx < 2.0^Emin(Floatmu{szE,szf})
                 # |x| <= μ/2?
                 # This situation occurs, in particular, for all subnormal
                 # double precision numbers.
                 if absx <= 2.0^(-Int64(szf)-1+Emin(Floatmu{szE,szf}))
-                    return signbit(x) ? (1 << (UInt64(szE)+UInt64(szf))) : 0
+                    if signbit(x)
+                        return (UInt32(1) << (UInt32(szE)+UInt32(szf)), x==0.0 ? 0 : 1)
+                    else
+                        return (0, x==0.0 ? 0 : -1) 
+                    end
                 else
                     # `x` is subnormal in the format `Floatmu{szE,szf}`
                     # (but normal in double precision, see comment above) so
@@ -584,17 +631,20 @@ function float64_to_uint64mu(x::Float64,szE,szf)::UInt64
                     # exponent is Emin(Floatmu{szE,szf})
                     shift = Emin(Floatmu{szE,szf}) - (e - 1023)
                     newf = ((f >> 1) + 2^51) >> (shift-1) # Adding hidden bit
-                    (newf,addE) = roundfrac(newf,szf)
+                    (newf, addE, inexact) = roundfrac(newf,szf)
                     if addE != 0 # The rounded number is normal
-                        return (s << (UInt64(szE)+UInt64(szf))) | (1 << UInt64(szf)) | newf
+                        return ((s << (UInt32(szE)+UInt32(szf))) | (UInt32(1) << UInt32(szf)) | newf,
+                                x < 0 ? -inexact : inexact)
                     else
-                        return (s << (UInt64(szE)+UInt64(szf))) | newf # e==0 (subnormal)
+                        return ((s << (UInt32(szE)+UInt32(szf))) | newf,
+                                x < 0 ? -inexact : inexact) # e==0 (subnormal)
                     end
                 end
             else # Rounding to a normal float in the format `Floatmu{szE,szf}`
-                newe = (e - 1023) + bias(Floatmu{szE,szf})
-                (newf,addE) = roundfrac(f,szf)
-                return s << (UInt64(szE)+UInt64(szf)) | ((newe+addE) << UInt64(szf)) | newf
+                newe = (e - UInt32(1023)) + bias(Floatmu{szE,szf})
+                (newf, addE, inexact) = roundfrac(f,szf)
+                return (s << (UInt32(szE)+UInt32(szf)) | ((newe+addE) << UInt32(szf)) | newf,
+                        x < 0 ? -inexact : inexact)
             end
         end
     end        
@@ -616,22 +666,21 @@ function convert(::Type{Float64}, x::Floatmu{szE,szf}) where {szE, szf}
     if isnan(x)
         return NaN
     elseif isinf(x)
-        signx = (x.v & smask(Floatmu{szE,szf})) >> (UInt64(szE)+UInt64(szf))
+        signx = (x.v & sign_mask(Floatmu{szE,szf})) >> (UInt32(szE)+UInt32(szf))
         return (signx == 1) ? -Inf : Inf
     else
-        s = (x.v & smask(Floatmu{szE,szf})) >> (UInt64(szE)+UInt64(szf))
-        e = ((x.v & Emask(Floatmu{szE,szf})) >> UInt64(szf))
-        f = x.v & fmask(Floatmu{szE,szf})
-        s,e,f
+        s = (x.v & sign_mask(Floatmu{szE,szf})) >> (UInt32(szE)+UInt32(szf))
+        e = ((x.v & exponent_mask(Floatmu{szE,szf})) >> UInt32(szf))
+        f = x.v & significand_mask(Floatmu{szE,szf})
         if e == 0
             if f == 0
                 return (s==0 ? 1.0 : -1.0)*0.0
             else
-                return (s==0 ? 1.0 : -1.0)*2.0^(Emin(Floatmu{szE,szf})-szf)*(x.v & fmask(Floatmu{szE,szf}))
+                return (s==0 ? 1.0 : -1.0)*2.0^(Emin(Floatmu{szE,szf})-szf)*(x.v & significand_mask(Floatmu{szE,szf}))
             end
         else
             E = Int64(e) - bias(Floatmu{szE,szf})
-            return (s==0 ? 1.0 : -1.0)*((2.0^UInt64(szf) + f)/2.0^UInt64(szf))*2.0^E
+            return (s==0 ? 1.0 : -1.0)*((2.0^UInt32(szf) + f)/2.0^UInt32(szf))*2.0^E
         end
     end
 end
@@ -678,7 +727,7 @@ julia> convert(Floatmu{2,4},0.1)
 ```
 """
 function convert(::Type{Floatmu{szE,szf}}, x::Float64)  where {szE,szf}
-    return Floatmu{szE,szf}(float64_to_uint64mu(x,szE,szf),nothing)
+    return Floatmu{szE,szf}(float64_to_uint32mu(x,szE,szf),nothing)
 end
 
 
@@ -694,7 +743,7 @@ julia> convert(Floatmu{2,4},0.1f0)
 ```
 """
 function convert(::Type{Floatmu{szE,szf}}, x::Float32)  where {szE,szf}
-    return Floatmu{szE,szf}(float64_to_uint64mu(Float64(x),szE,szf),nothing)
+    return Floatmu{szE,szf}(float64_to_uint32mu(Float64(x),szE,szf),nothing)
 end
 
 """
@@ -712,16 +761,33 @@ true
 ```
 """
 function convert(::Type{Floatmu{szE,szf}}, x::Float16)  where {szE,szf}
-    return Floatmu{szE,szf}(float64_to_uint64mu(Float64(x),szE,szf),nothing)
+    return Floatmu{szE,szf}(float64_to_uint32mu(Float64(x),szE,szf),nothing)
 end
+
+
+Float16(x::Floatmu{szE,szf}) where {szE,szf} = convert(Float16,x)
+Float32(x::Floatmu{szE,szf}) where {szE,szf} = convert(Float32,x)
+Float64(x::Floatmu{szE,szf}) where {szE,szf} = convert(Float64,x)
+
+"""
+    round(x::Floatmu{szE,szf},r::RoundingMode) where {szE,szf}
+"""
+function round(x::Floatmu{szE,szf},r::RoundingMode) where {szE,szf}
+    return Floatmu{szE,szf}(round(Float64(x),r))
+end
+
+for Ty in (Int8, Int32, Int64, UInt8, UInt16, UInt32, UInt64)
+    @eval begin
+        trunc(::Type{$Ty}, x::Floatmu{szE,szf}) where {szE,szf} = $Ty(Float64(x))
+    end
+end
+
 
 """
     parse(::Type{Floatmu{szE,szf}}, str::AbstractString) where {szE, szf}
 
 Parse the string `str` representing a floating-point number and convert it 
 to a `Floatmu{szE,szf}` object.
-
-
 
 # Examples
 
@@ -865,13 +931,13 @@ function prevfloat(x::Floatmu{szE,szf}) where {szE,szf}
         return x
     end
     # x == ±0.0?
-    if x.v & ~smask(Floatmu{szE,szf}) == 0
+    if x.v & ~sign_mask(Floatmu{szE,szf}) == 0
         return -μ(Floatmu{szE,szf})
     end
     if signbit(x)
-        return Floatmu{szE,szf}(x.v+1,nothing)
+        return Floatmu{szE,szf}(x.v+UInt32(1),nothing)
     else
-        return Floatmu{szE,szf}(x.v-1,nothing)
+        return Floatmu{szE,szf}(x.v-UInt32(1),nothing)
     end
 end
 
@@ -901,20 +967,20 @@ function nextfloat(x::Floatmu{szE,szf}) where {szE,szf}
         return x
     end
     # x == ±0.0?
-    if x.v & ~smask(Floatmu{szE,szf}) == 0
+    if x.v & ~sign_mask(Floatmu{szE,szf}) == 0
         return μ(Floatmu{szE,szf})
     end
     if signbit(x)
-        return Floatmu{szE,szf}(x.v-1,nothing)
+        return Floatmu{szE,szf}(x.v-UInt32(1),nothing)
     else
-        return Floatmu{szE,szf}(x.v+1,nothing)
+        return Floatmu{szE,szf}(x.v+UInt32(1),nothing)
     end
 end
 
 
 """
     nb_fp_numbers(a::Floatmu{szE,szf}, b::Floatmu{szE,szf}) where {szE,szf}
-
+-
 Return the number of floats in the interval ``[a,b]``. If ``a > b``, throw
 an `ArgumentError` exception.
 
@@ -934,18 +1000,89 @@ function nb_fp_numbers(a::Floatmu{szE,szf}, b::Floatmu{szE,szf}) where {szE,szf}
     end
     if a >= 0
         # Removing the sign of `a` in case it is -0.0
-        return b.v - (a.v & ~smask(Floatmu{szE,szf})) + 1
+        return b.v - (a.v & ~sign_mask(Floatmu{szE,szf})) + 1
     end
     if b <= 0
         # Forcing the sign of `b` in case it is +0.0
-        return a.v - (b.v | smask(Floatmu{szE,szf})) + 1
+        return a.v - (b.v | sign_mask(Floatmu{szE,szf})) + 1
     end
     # 0 ∈ (a,b)
     z = Floatmu{szE,szf}(0.0)
     a = -a
     return (b.v - z.v) + (a.v - z.v) + 1
 end
-    
+
+"""
+    isinexact(x::Floatmu{szE,szf}) where {szE,szf}
+
+Return `true` if the value `x` was rounded when created as a `Floatmu{szE,szf}` and 
+`false` otherwise.
+
+An NaN is never inexact. An infinite is inexact only if created from a finite value.
+
+# See:
+- [`errorsign(x::Floatmu{szE,szf}) where {szE,szf}`](@ref).
+- [`reset_inexact()`](@ref)
+- [`inexact()`](@ref)
+
+# Examples
+
+```jldoctest
+julia> isinexact(Floatmu{2,2}(0.25)+Floatmu{2,2}(2.0))
+true
+julia> isinexact(Floatmu{2,2}(0.25)+Floatmu{2,2}(1.5))
+false
+```
+
+"""
+function isinexact(x::Floatmu{szE,szf}) where {szE,szf}
+    return x.inexact != 0
+end
+
+
+"""
+    errorsign(x::Floatmu{szE,szf}) where {szE,szf}
+
+Return `1` if `x` was rounded by excess when created as a `Floatmu{szE,szf}`, `-1` if it
+was rounded by default, and `0` if no rounding took place.
+
+An NaN is never in error. An infinite is in error only if created from a finite value.
+
+# See 
+- [`isinexact(x::Floatmu{szE,szf}) where {szE,szf}`](@ref).
+- [`reset_inexact()`](@ref)
+- [`inexact()`](@ref)
+
+
+# Examples
+
+```jldoctest
+julia> errorsign(Floatmu{2,2}(0.5))
+0
+julia> errorsign(Floatmu{2,2}(1.7))
+1
+julia> errorsign(Floatmu{2,2}(-2.8))
+-1
+"""
+function errorsign(x::Floatmu{szE,szf}) where {szE,szf}
+    return x.inexact
+end
+
+
+"""
+    reset_inexact()
+
+Reset the global inexact flag to `false`.
+"""
+reset_inexact() = global inexact_flag = false
+
+"""
+    inexact()
+
+Return the value of the global inexact flag.
+"""
+inexact() = return inexact_flag
+
 """
     FloatmuIterator{szE,szf}
 
@@ -979,8 +1116,8 @@ struct FloatmuIterator{szE,szf}
         return new{szE,szf}(start,stop)
     end
     function FloatmuIterator(::Type{Floatmu{szE,szf}},start::Float64,stop::Float64) where {szE,szf}
-        return new{szE,szf}(Floatmu{szE,szf}(float64_to_uint64mu(start, szE, szf),nothing),
-                            Floatmu{szE,szf}(float64_to_uint64mu(stop, szE, szf),nothing))
+        return new{szE,szf}(Floatmu{szE,szf}(float64_to_uint32mu(start, szE, szf),nothing),
+                            Floatmu{szE,szf}(float64_to_uint32mu(stop, szE, szf),nothing))
     end
 end
 
@@ -999,6 +1136,23 @@ end
 function eltype(iter::FloatmuIterator{szE,szf}) where {szE,szf}
     return Floatmu{szE,szf}
 end
+
+
+"""
+    decompose(x::Floatmu{szE,szf}) where {szE,szf}
+
+"""
+function decompose(x::Floatmu{szE,szf}) where {szE,szf}
+    isnan(x) && return 0,0,0
+    isinf(x) && return ifelse(x < 0, -1, 1), 0, 0
+    n = reinterpret(UInt32,x.v)
+    s = (n & significand_mask(Floatmu{szE,szf})) % Int32
+    e = ((n & exponent_mask(Floatmu{szE,szf})) >> szf) % Int
+    s |= Int32(e != 0) << szf
+    d = ifelse(signbit(x), -1, 1)
+    s, e - (szf+bias(Floatmu{szE,szf})) + (e == 0), d
+end
+
 
 """
     FloatmuOp1Factory

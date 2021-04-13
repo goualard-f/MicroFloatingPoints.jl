@@ -1,47 +1,48 @@
 @testset "float64_to_uint64mu" begin
-    fl2uint64 = MicroFloatingPoints.float64_to_uint64mu
+    fl2uint32 = MicroFloatingPoints.float64_to_uint32mu
     # Positives
-    @test fl2uint64(0.0,2,2) == 0
-    @test fl2uint64(0.1,2,2) == 0
-    @test fl2uint64(0.125,2,2) == 0
-    @test fl2uint64(0.126,2,2) == 1
-    @test fl2uint64(0.75,2,2) == 3
-    @test fl2uint64(0.76,2,2) == 3
-    @test fl2uint64(0.874,2,2) == 3
-    @test fl2uint64(0.875,2,2) == 4
-    @test fl2uint64(0.876,2,2) == 4
-    @test fl2uint64(1.0,2,2) == 4
-    @test fl2uint64(2.25,2,2) == 8
-    @test fl2uint64(2.3,2,2) == 9
-    @test fl2uint64(3.5,2,2) == 11
-    @test fl2uint64(3.74,2,2) == 11
-    @test fl2uint64(3.75,2,2) == 12
-    @test fl2uint64(5.5,2,2) == 12
-    @test fl2uint64(Inf,2,2) == 12
-    @test fl2uint64(NaN,2,2) > 12
+    @test fl2uint32(0.0,2,2) == (0,0)
+    @test fl2uint32(0.1,2,2) == (0,-1)
+    @test fl2uint32(0.125,2,2) == (0,-1)
+    @test fl2uint32(0.126,2,2) == (1,1)
+    @test fl2uint32(0.75,2,2) == (3,0)
+    @test fl2uint32(0.76,2,2) == (3,-1)
+    @test fl2uint32(0.874,2,2) == (3,-1)
+    @test fl2uint32(0.875,2,2) == (4,1)
+    @test fl2uint32(0.876,2,2) == (4,1)
+    @test fl2uint32(1.0,2,2) == (4,0)
+    @test fl2uint32(2.25,2,2) == (8,-1)
+    @test fl2uint32(2.3,2,2) == (9,1)
+    @test fl2uint32(3.5,2,2) == (11,0)
+    @test fl2uint32(3.74,2,2) == (11,-1)
+    @test fl2uint32(3.75,2,2) == (12,1)
+    @test fl2uint32(5.5,2,2) == (12,1)
+    @test fl2uint32(Inf,2,2) == (12,0)
+    @test fl2uint32(NaN,2,2) > (12,0)
     # Negatives
-    @test fl2uint64(-0.0,2,2) == 16+0
-    @test fl2uint64(-0.125,2,2) == 16+0
-    @test fl2uint64(-0.126,2,2) == 16+1
-    @test fl2uint64(-0.75,2,2) == 16+3
-    @test fl2uint64(-0.76,2,2) == 16+3
-    @test fl2uint64(-0.874,2,2) == 16+3
-    @test fl2uint64(-0.875,2,2) == 16+4
-    @test fl2uint64(-0.876,2,2) == 16+4
-    @test fl2uint64(-1.0,2,2) == 16+4
-    @test fl2uint64(-2.25,2,2) == 16+8
-    @test fl2uint64(-2.3,2,2) == 16+9
-    @test fl2uint64(-3.5,2,2) == 16+11
-    @test fl2uint64(-3.74,2,2) == 16+11
-    @test fl2uint64(-3.75,2,2) == 16+12
-    @test fl2uint64(-5.5,2,2) == 16+12
-    @test fl2uint64(-Inf,2,2) == 16+12
-    @test fl2uint64(-NaN,2,2) > 12
+    @test fl2uint32(-0.0,2,2) == (16+0,0)
+    @test fl2uint32(-0.1,2,2) == (16+0,1)
+    @test fl2uint32(-0.125,2,2) == (16+0,1)
+    @test fl2uint32(-0.126,2,2) == (16+1,-1)
+    @test fl2uint32(-0.75,2,2) == (16+3,0)
+    @test fl2uint32(-0.76,2,2) == (16+3,1)
+    @test fl2uint32(-0.874,2,2) == (16+3,1)
+    @test fl2uint32(-0.875,2,2) == (16+4,-1)
+    @test fl2uint32(-0.876,2,2) == (16+4,-1)
+    @test fl2uint32(-1.0,2,2) == (16+4,0)
+    @test fl2uint32(-2.25,2,2) == (16+8,1)
+    @test fl2uint32(-2.3,2,2) == (16+9,-1)
+    @test fl2uint32(-3.5,2,2) == (16+11,0)
+    @test fl2uint32(-3.74,2,2) == (16+11,1)
+    @test fl2uint32(-3.75,2,2) == (16+12,-1)
+    @test fl2uint32(-5.5,2,2) == (16+12,-1)
+    @test fl2uint32(-Inf,2,2) == (16+12,0)
+    @test fl2uint32(-NaN,2,2) > (12,0)
 
     x = Float16(0.0)
     intx = 0
     while x < Float16(Inf)
-        @test fl2uint64(Float64(x),5,10) == intx
+        @test fl2uint32(Float64(x),5,10) == (intx,0)
         intx += 1
         x = nextfloat(x)
     end
@@ -49,7 +50,7 @@
     x = Float16(-0.0)
     intx = 1 << 15
     while x > Float16(-Inf)
-        @test fl2uint64(Float64(x),5,10) == intx
+        @test fl2uint32(Float64(x),5,10) == (intx,0)
         intx += 1
         x = prevfloat(x)
     end

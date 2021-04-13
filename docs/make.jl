@@ -9,6 +9,7 @@ makedocs(
     pages = ["Home" => "index.md"
              "A Guided Tour" => "guided-tour.md"
              "Manual" => "manual.md"
+             "Installation" => "installation.md"
              "Developer Documentation" => "developer.md"
              ],
     #assets = ["assets/favicon.ico"]

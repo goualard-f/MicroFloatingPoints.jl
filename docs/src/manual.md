@@ -1,5 +1,7 @@
 # Manual
 
+## The `MicroFloatingPoints` module
+
 ```@docs
 floatmax(::Type{Floatmu{szE,szf}})  where {szE,szf}
 floatmin(::Type{Floatmu{szE,szf}})  where {szE,szf}
@@ -23,3 +25,13 @@ parse(::Type{Floatmu{szE,szf}}, str::AbstractString) where {szE, szf}
 ```@docs
 signbit(x::Floatmu{szE,szf}) where {szE, szf}
 ```
+
+
+```@docs
+inexact()
+reset_inexact()
+```
+
+## The `MFPRandom` module
+
+## The `MFPPlot` module

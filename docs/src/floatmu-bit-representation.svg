@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="297mm"
-   height="210mm"
-   viewBox="0 0 297 210"
+   width="121.45239mm"
+   height="22.304632mm"
+   viewBox="0 0 121.45239 22.304632"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.3 (2405546, 2018-03-11)"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="355.14768"
-     inkscape:cy="522.74335"
+     inkscape:zoom="0.35"
+     inkscape:cx="63.597348"
+     inkscape:cy="-61.131951"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -38,7 +38,11 @@
      inkscape:window-height="877"
      inkscape:window-x="1080"
      inkscape:window-y="1020"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -55,7 +59,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-87)">
+     transform="translate(-32.633926,-120.43879)">
     <rect
        style="opacity:1;vector-effect:none;fill:#ff0002;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4747"
@@ -71,7 +75,7 @@
          height="7.9375"
          width="7.5595236"
          id="rect4747-0-7-1-7"
-         style="opacity:0.432;vector-effect:none;fill:none;fill-opacity:1;stroke:#5a5a5a;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+         style="opacity:0.43200001;vector-effect:none;fill:none;fill-opacity:1;stroke:#5a5a5a;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
       <rect
          y="128.04465"
          x="40.443451"
@@ -231,7 +235,7 @@
          style="font-size:7.05555534px;text-align:center;text-anchor:middle;stroke-width:0.26458332px">szf</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;line-height:150%;font-family:'Libertinus Sans';-inkscape-font-specification:'Libertinus Sans Italic';text-align:end;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;line-height:150%;font-family:'Libertinus Sans';-inkscape-font-specification:'Libertinus Sans Italic';text-align:end;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="41.164986"
        y="141.04823"
        id="text4988"><tspan
@@ -239,10 +243,10 @@
          id="tspan4986"
          x="41.164986"
          y="141.04823"
-         style="font-size:4.93888903px;stroke-width:0.26458332px;-inkscape-font-specification:'Libertinus Sans Italic';font-family:'Libertinus Sans';font-weight:normal;font-style:italic;font-stretch:normal;font-variant:normal;">Sign</tspan></text>
+         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;font-family:'Libertinus Sans';-inkscape-font-specification:'Libertinus Sans Italic';stroke-width:0.26458332px">Sign</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;line-height:150%;font-family:'Libertinus Sans';-inkscape-font-specification:'Libertinus Sans Italic';text-align:end;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;line-height:150%;font-family:'Libertinus Sans';-inkscape-font-specification:'Libertinus Sans Italic';text-align:end;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="68.83326"
        y="141.58278"
        id="text4992"><tspan
@@ -250,10 +254,10 @@
          id="tspan4990"
          x="68.83326"
          y="141.58278"
-         style="font-size:4.93888903px;stroke-width:0.26458332px;-inkscape-font-specification:'Libertinus Sans Italic';font-family:'Libertinus Sans';font-weight:normal;font-style:italic;font-stretch:normal;font-variant:normal;">Exponent</tspan></text>
+         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;font-family:'Libertinus Sans';-inkscape-font-specification:'Libertinus Sans Italic';stroke-width:0.26458332px">Exponent</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;line-height:150%;font-family:'Libertinus Sans';-inkscape-font-specification:'Libertinus Sans Italic';text-align:end;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;line-height:150%;font-family:'Libertinus Sans';-inkscape-font-specification:'Libertinus Sans Italic';text-align:end;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="130.9509"
        y="141.18187"
        id="text4996"><tspan
@@ -261,6 +265,6 @@
          id="tspan4994"
          x="130.9509"
          y="141.18187"
-         style="font-size:4.93888903px;stroke-width:0.26458332px;-inkscape-font-specification:'Libertinus Sans Italic';font-family:'Libertinus Sans';font-weight:normal;font-style:italic;font-stretch:normal;font-variant:normal;">Fractional part</tspan></text>
+         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;font-family:'Libertinus Sans';-inkscape-font-specification:'Libertinus Sans Italic';stroke-width:0.26458332px">Fractional part</tspan></text>
   </g>
 </svg>

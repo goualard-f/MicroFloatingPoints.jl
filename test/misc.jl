@@ -21,3 +21,9 @@ end;
     @test nbfp(F22(-0.5),F22(0.0)) == 3
     @test nbfp(F22(-1.0),F22(0.75)) == 8
 end;
+
+
+@testset "precision" begin
+    @test precision(Floatmu{5,10}) == precision(Float16)
+    @test precision(Floatmu{8,23}) == precision(Float32)
+end;

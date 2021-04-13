@@ -38,7 +38,7 @@ end
 
 function rand(::Type{Floatmu{szE,szf}}) where {szE,szf}
     f = irandint(szf)
-    v = (UInt64(MicroFloatingPoints.bias(Floatmu{szE,szf})) << szf) | f
+    v = UInt32((UInt32(MicroFloatingPoints.bias(Floatmu{szE,szf})) << szf) | f)
     return Floatmu{szE,szf}(v,nothing) - Floatmu{szE,szf}(1.0)
 end
 
