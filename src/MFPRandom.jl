@@ -24,7 +24,7 @@ import Random.rand
 using MicroFloatingPoints
 
 """
-    irandint(rng,n)
+    irandint(n)
 
 Draw a n bits integer at **random**.
 
@@ -35,7 +35,12 @@ function irandint(n)
     return rand(UInt64) >> (64-n)
 end
 
+"""
+    rand(::Type{Floatmu{szE,szf}}) where {szE,szf}
 
+Draw a `floatmu{szE,szf}` at random in ``[0,1)``.
+
+"""
 function rand(::Type{Floatmu{szE,szf}}) where {szE,szf}
     f = irandint(szf)
     v = UInt32((UInt32(MicroFloatingPoints.bias(Floatmu{szE,szf})) << szf) | f)

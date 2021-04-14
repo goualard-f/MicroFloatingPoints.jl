@@ -20,10 +20,12 @@
 
 module MicroFloatingPoints
 
+#import Formatting
+import Printf.@printf
 import Base.convert, Base.show, Base.Float16, Base.Float32, Base.Float64
 import Base.sign, Base.signbit, Base.bitstring
 import Base.typemin, Base.typemax, Base.maxintfloat, Base.eps
-import Base.floatmax, Base.floatmin, Base.maxintfloat, Base.precision
+import Base.floatmax, Base.floatmin, Base.precision
 import Base.isinf, Base.isfinite, Base.isnan, Base.issubnormal
 import Base: exponent_max, exponent_raw_max
 import Base.round, Base.trunc
@@ -41,7 +43,7 @@ export Floatmu
 export μ, λ, NaNμ, Infμ
 export FloatmuIterator
 export isinexact, errorsign, reset_inexact, inexact
-
+export Emax, Emin, nb_fp_numbers, bias
 
 """
     inexact_flag
@@ -76,7 +78,7 @@ julia> MyFloat32 = Floatmu{8,23}
 Floatmu{8,23}
 
 julia> a=MyFloat32(0.1)
-0.10000000149011612
+0.1
 
 julia> a == 0.1f0
 true
@@ -88,11 +90,28 @@ struct Floatmu{szE,szf} <: AbstractFloat
     v::UInt32
     # Is the value an approximation by default (-1), excess (+1) or the exact value (0)
     inexact::Int32
+
     function Floatmu{szE,szf}(x::Float64) where {szE,szf}
         @assert szE isa Integer "Exponent size must be an integer!"
         @assert szf isa Integer "Fractional part size must be an integer!"
         @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
         (val,rnd) = float64_to_uint32mu(x, szE, szf)
+        global inexact_flag = inexact_flag || (rnd != 0)
+        return new{szE,szf}(val,rnd)
+    end
+    function Floatmu{szE,szf}(x::Float32) where {szE,szf}
+        @assert szE isa Integer "Exponent size must be an integer!"
+        @assert szf isa Integer "Fractional part size must be an integer!"
+        @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
+        (val,rnd) = float64_to_uint32mu(Float64(x), szE, szf)
+        global inexact_flag = inexact_flag || (rnd != 0)
+        return new{szE,szf}(val,rnd)
+    end
+    function Floatmu{szE,szf}(x::Float16) where {szE,szf}
+        @assert szE isa Integer "Exponent size must be an integer!"
+        @assert szf isa Integer "Fractional part size must be an integer!"
+        @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
+        (val,rnd) = float64_to_uint32mu(Float64(x), szE, szf)
         global inexact_flag = inexact_flag || (rnd != 0)
         return new{szE,szf}(val,rnd)
     end
@@ -113,6 +132,8 @@ struct Floatmu{szE,szf} <: AbstractFloat
         return new{szE,szf}(val, rnd)
     end
     """
+        Floatmu{szE,szf}(x::UInt32, dummy) where {szE,szf}
+
         Constructor for internal use only, when `x` is known to be 
         already compliant with the requirements of the `Floatmu{szE,szf} type.
         The `dummy` parameter serves only to differentiate this constructor
@@ -149,29 +170,51 @@ exponent_mask(::Type{Floatmu{szE,szf}}) where {szE, szf} = UInt32((UInt32(1) << 
 sign_mask(::Type{Floatmu{szE,szf}}) where {szE, szf} = UInt32(1) << (UInt32(szE)+UInt32(szf))
 
 
-precision(::Type{Floatmu{szE,szf}}) where {szE,szf} = UInt32(szf+1)
+precision(::Type{Floatmu{szE,szf}}) where {szE,szf} = Int64(szf+1)
 
 """
     Emax(::Type{Floatmu{szE,szf}}) where {szE, szf}
 
-Maximum unbiased exponent for a `Floatmu{szE,szf}` (**internal use**)
+Maximum unbiased exponent for a `Floatmu{szE,szf}` returned as an `UInt32`.
+
+See: `exponent_max`, `exponent_raw_max`, [`Emin`](@ref)
+
+# Examples
+
+```jldoctest
+julia> Emax(Floatmu{8,23})
+0x0000007f
+```
 """
 Emax(::Type{Floatmu{szE,szf}}) where {szE, szf} = UInt32(2^(UInt32(szE)-1)-1)
 
-exponent_max(::Type{Floatmu{szE,szf}}) where {szE, szf} = Emax(Floatmu{szE,szf})
-exponent_raw_max(::Type{Floatmu{szE,szf}}) where {szE, szf} = exponent_mask(Floatmu{szE,szf}) >> szf
+exponent_max(::Type{Floatmu{szE,szf}}) where {szE, szf} = Int64(Emax(Floatmu{szE,szf}))
+exponent_raw_max(::Type{Floatmu{szE,szf}}) where {szE, szf} = Int64(exponent_mask(Floatmu{szE,szf}) >> szf)
 
 """
     Emin(::Type{Floatmu{szE,szf}}) where {szE, szf}
 
-Minimum unbiased exponent for a `Floatmu{szE,szf}` (**internal use**)
+Minimum unbiased exponent for a `Floatmu{szE,szf}` returned as an `Int32`.
+
+See: `exponent_max`, `exponent_raw_max`, [`Emax`](@ref)
+
+# Examples
+
+```jldoctest
+julia> Emin(Floatmu{8,23})
+-126
+```
 """
 Emin(::Type{Floatmu{szE,szf}}) where {szE, szf} = Int32(1 - Emax(Floatmu{szE,szf}))
 
 """
     bias(::Type{Floatmu{szE,szf}}) where {szE, szf}
 
-Bias of the exponent for a `Floatmu{szE,szf}` (**internal use**)
+Bias of the exponent for a `Floatmu{szE,szf}`
+
+```jldoctest
+julia> bias(Floatmu{8,23}) 
+127
 """
 bias(::Type{Floatmu{szE,szf}}) where {szE, szf} = Emax(Floatmu{szE,szf})
 
@@ -218,7 +261,7 @@ julia> eps(Floatmu{2,2})
 0.25
 
 julia> eps(Floatmu{3,5})
-0.03125
+0.031
 
 julia> eps(Floatmu{8,23})==eps(Float32)
 true
@@ -721,9 +764,10 @@ end
 Convert a double precision float to a `Floatmu`. Rounding may occur.
 
 #Examples
+
 ```jldoctest
 julia> convert(Floatmu{2,4},0.1)
-0.1015625
+0.125
 ```
 """
 function convert(::Type{Floatmu{szE,szf}}, x::Float64)  where {szE,szf}
@@ -739,7 +783,7 @@ Convert a single precision float to a `Floatmu`. Rounding may occur.
 #Examples
 ```jldoctest
 julia> convert(Floatmu{2,4},0.1f0)
-0.1015625
+0.125
 ```
 """
 function convert(::Type{Floatmu{szE,szf}}, x::Float32)  where {szE,szf}
@@ -769,9 +813,6 @@ Float16(x::Floatmu{szE,szf}) where {szE,szf} = convert(Float16,x)
 Float32(x::Floatmu{szE,szf}) where {szE,szf} = convert(Float32,x)
 Float64(x::Floatmu{szE,szf}) where {szE,szf} = convert(Float64,x)
 
-"""
-    round(x::Floatmu{szE,szf},r::RoundingMode) where {szE,szf}
-"""
 function round(x::Floatmu{szE,szf},r::RoundingMode) where {szE,szf}
     return Floatmu{szE,szf}(round(Float64(x),r))
 end
@@ -793,7 +834,7 @@ to a `Floatmu{szE,szf}` object.
 
 ```jldoctest
 julia> parse(Floatmu{5,7},"0.1")
-0.10009765625
+0.1
 
 julia> parse(Floatmu{5,7},"1.0e10")
 Infμ{5,7}
@@ -835,7 +876,7 @@ to a `Floatmu{szE,szf}` object.
 
 ```jldoctest
 julia> tryparse(Floatmu{5,7},"0.1")
-0.10009765625
+0.1
 
 julia> tryparse(Floatmu{5,7},"1.0e10")
 Infμ{5,7}
@@ -847,8 +888,8 @@ Contrary to `parse`, if the string cannot be converted to a `Float64`, the value
 
 # Examples
 ```jldoctest
-julia> tryparse(Floatmu{5,7},"0.1a")
-nothing
+julia> tryparse(Floatmu{5,7},"0.1a") == nothing
+true
 ```
 """
 function tryparse(::Type{Floatmu{szE,szf}}, str::AbstractString) where {szE, szf}
@@ -860,26 +901,50 @@ function tryparse(::Type{Floatmu{szE,szf}}, str::AbstractString) where {szE, szf
     end
 end
 
-"""
-    show(io::IO, x::Floatmu{szE,szf}) where {szE, szf}
 
-Display a `Floatmu{szE,szf}` as a string.
+# Hack to use @printf with a format depending on the `Floatmu` used.
+variable_printf(io,x::Floatmu{szE,2}) where {szE} = @printf(io,"%.2g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,3}) where {szE} = @printf(io,"%.2g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,4}) where {szE} = @printf(io,"%.3g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,5}) where {szE} = @printf(io,"%.2g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,6}) where {szE} = @printf(io,"%.3g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,7}) where {szE} = @printf(io,"%.3g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,8}) where {szE} = @printf(io,"%.3g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,9}) where {szE} = @printf(io,"%.4g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,10}) where {szE} = @printf(io,"%.4g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,11}) where {szE} = @printf(io,"%.4g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,12}) where {szE} = @printf(io,"%.4g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,13}) where {szE} = @printf(io,"%.5g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,14}) where {szE} = @printf(io,"%.5g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,15}) where {szE} = @printf(io,"%.5g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,16}) where {szE} = @printf(io,"%.6g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,17}) where {szE} = @printf(io,"%.6g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,18}) where {szE} = @printf(io,"%.6g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,19}) where {szE} = @printf(io,"%.7g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,20}) where {szE} = @printf(io,"%.7g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,21}) where {szE} = @printf(io,"%.7g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,22}) where {szE} = @printf(io,"%.7g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,23}) where {szE} = @printf(io,"%.7g",convert(Float64,x))
 
-# Examples
-```jldoctest
-julia> show(Floatmu{2,2}(0.23))
-0.25
-```
-"""
+
 function show(io::IO, x::Floatmu{szE,szf}) where {szE, szf}
     if isnan(x)
         print(io,"NaNμ{$(szE),$(szf)}")
     elseif isinf(x)
         print(io,(x < 0 ? "-" : "")*"Infμ{$(szE),$(szf)}")
     else
-        print(io,convert(Float64,x))
+        # Hack to print "a.0" instead of "a"
+        v = Float64(x)
+        if isinteger(v)
+            print(io,v)
+        else
+            variable_printf(io,x)
+        end
     end
 end
+show(io::IO, x::Floatmu{5,10}) = print(io,Float16(x))
+show(io::IO, x::Floatmu{8,23}) = print(io,Float32(x))
+
 
 """
     bitstring(x::Floatmu{szE,szf}) where {szE,szf}
@@ -1033,7 +1098,6 @@ true
 julia> isinexact(Floatmu{2,2}(0.25)+Floatmu{2,2}(1.5))
 false
 ```
-
 """
 function isinexact(x::Floatmu{szE,szf}) where {szE,szf}
     return x.inexact != 0
@@ -1049,7 +1113,7 @@ was rounded by default, and `0` if no rounding took place.
 An NaN is never in error. An infinite is in error only if created from a finite value.
 
 # See 
-- [`isinexact(x::Floatmu{szE,szf}) where {szE,szf}`](@ref).
+- [`isinexact(x::Floatmu{szE,szf}) where {szE,szf}`](@ref)
 - [`reset_inexact()`](@ref)
 - [`inexact()`](@ref)
 
@@ -1063,6 +1127,7 @@ julia> errorsign(Floatmu{2,2}(1.7))
 1
 julia> errorsign(Floatmu{2,2}(-2.8))
 -1
+```
 """
 function errorsign(x::Floatmu{szE,szf}) where {szE,szf}
     return x.inexact
@@ -1138,10 +1203,6 @@ function eltype(iter::FloatmuIterator{szE,szf}) where {szE,szf}
 end
 
 
-"""
-    decompose(x::Floatmu{szE,szf}) where {szE,szf}
-
-"""
 function decompose(x::Floatmu{szE,szf}) where {szE,szf}
     isnan(x) && return 0,0,0
     isinf(x) && return ifelse(x < 0, -1, 1), 0, 0
@@ -1154,11 +1215,7 @@ function decompose(x::Floatmu{szE,szf}) where {szE,szf}
 end
 
 
-"""
-    FloatmuOp1Factory
-    
-    Macro to generate unary operators on FloatMu numbers
-"""
+# Macro to generate unary operators on FloatMu numbers
 macro FloatmuOp1Factory(op::Symbol)
     return quote
         function $(esc(op))(x::Floatmu{szE,szf}) where {szE,szf}
@@ -1188,11 +1245,7 @@ end
 @FloatmuOp1Factory(log10)
 @FloatmuOp1Factory(log1p)
 
-"""
-    FloatmuOp2Factory
-    
-    Macro to generate binary operators on Floatmu{szE,szf} numbers
-"""
+#    Macro to generate binary operators on Floatmu{szE,szf} numbers
 macro FloatmuOp2Factory(op::Symbol)
     return quote
         function $(esc(op))(x::Floatmu{szE,szf}, y::Floatmu{szE,szf}) where {szE,szf}
@@ -1245,10 +1298,5 @@ end
 @BoolOp2Factory(<=)
 @BoolOp2Factory(>)
 @BoolOp2Factory(>=)
-
-
-               
-
-
                
 end # module

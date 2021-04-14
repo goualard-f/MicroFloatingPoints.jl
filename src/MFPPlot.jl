@@ -27,14 +27,9 @@ export real_line
 
 """
     real_line(start::Floatmu{szE,szf}, stop::Floatmu{szE,szf}) where {szE,szf}
-    real_line(::Type{Floatmu{szE,szf}}) where {szE,szf}
 
 Draw the real line between `start` and `stop` and display all floating-point
 numbers with `sze` bits exponent and `szf` bits fractional part.
-
-The second form draws all finite floating-point for the format `Floatmu{szE,szf}` and
-adds the infinities where the next/previous float would be with the format 
-`Floatmu{szE+1,szf}`.
 
 Both parameters `start` and `stop` must be finite. An `ArgumentError` exception
 is raised otherwise.
@@ -42,11 +37,8 @@ is raised otherwise.
 # Example
 ```@repl
 real_line(-floatmax(Floatmu{2,2}),floatmax(Floatmu{2,2}));
-real_line(Floatmu{2,2});
 ```
 """
-function real_line end
-
 function real_line(start::Floatmu{szE,szf}, stop::Floatmu{szE,szf}) where {szE,szf}
     (isfinite(start) && isfinite(stop)) || throw(ArgumentError("parameters must be finite"))
 
@@ -73,6 +65,18 @@ function real_line(start::Floatmu{szE,szf}, stop::Floatmu{szE,szf}) where {szE,s
     return fig
 end 
 
+"""
+    real_line(::Type{Floatmu{szE,szf}}) where {szE,szf}
+
+Draw all finite floating-point for the format `Floatmu{szE,szf}` and
+adds the infinities where the next/previous float would be with the format 
+`Floatmu{szE+1,szf}`.
+
+# Example
+```@repl
+real_line(Floatmu{2,2});
+```
+"""
 function real_line(::Type{Floatmu{szE,szf}}) where {szE,szf}
     posInf = nextfloat(Floatmu{szE+1,szf}(floatmax(Floatmu{szE,szf})))
     negInf = prevfloat(Floatmu{szE+1,szf}(-floatmax(Floatmu{szE,szf})))

@@ -8,6 +8,10 @@
     @test String(take!(io)) == "Infμ{2,2}"
     show(io,Floatmu{2,2}(-0.0))
     @test String(take!(io)) == "-0.0"
+    @test string(Floatmu{8,23}(0.1)) == string(Float32(0.1))
+    @test string(Floatmu{8,23}(0.3)) == string(Float32(0.3))
+    @test string(Floatmu{8,23}(3.2)) == string(Float32(3.2))
+    @test string(Floatmu{8,23}(-3.2)) == string(Float32(-3.2))
 end;
 
 @testset "bitstring" begin
