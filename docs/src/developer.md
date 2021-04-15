@@ -25,8 +25,8 @@ The first constructor uses `x` as the internal representation of the float, assu
 
 For both constructors, `dummy` may be anything and serves only to avoid ambiguities when calling a constructor. It is customary to use `nothing` for this parameter and the code of the package always does.
 
-
 ```@docs
+nb_fp_numbers(a::Floatmu{szE,szf}, b::Floatmu{szE,szf}) where {szE,szf}
 MicroFloatingPoints.inexact_flag
 MicroFloatingPoints.double_fields(x::Float64)
 MicroFloatingPoints.roundfrac(f,szf)
@@ -40,5 +40,5 @@ CurrentModule = MFPRandom
 ```
 
 ```@docs
-MFPRandom.irandint(n)
+irandint(rng::Random.AbstractRNG, n::Int64)
 ```

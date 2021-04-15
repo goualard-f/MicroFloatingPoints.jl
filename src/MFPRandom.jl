@@ -20,31 +20,32 @@
 
 module MFPRandom
 
-import Random.rand
-using MicroFloatingPoints
+import Random
+import MicroFloatingPoints
+
 
 """
-    irandint(n)
+    irandint(rng::Random.AbstractRNG, n::Int64)
 
 Draw a n bits integer at **random**.
 
 First, compute a 64 bits integer, then discard the lowest `(64-n)` bits, which 
-are usually the less *random* ones.
+are often the less *random* ones.
 """
-function irandint(n)
+function irandint(rng::Random.AbstractRNG, n::Int64)
     return rand(UInt64) >> (64-n)
 end
 
-"""
-    rand(::Type{Floatmu{szE,szf}}) where {szE,szf}
 
-Draw a `floatmu{szE,szf}` at random in ``[0,1)``.
-
-"""
-function rand(::Type{Floatmu{szE,szf}}) where {szE,szf}
-    f = irandint(szf)
-    v = UInt32((UInt32(MicroFloatingPoints.bias(Floatmu{szE,szf})) << szf) | f)
-    return Floatmu{szE,szf}(v,nothing) - Floatmu{szE,szf}(1.0)
+function Random.rand(rng::Random.AbstractRNG, ::Random.SamplerTrivial{Random.CloseOpen01{MicroFloatingPoints.Floatmu{szE,szf}}}) where {szE,szf}
+    f = irandint(rng, szf)
+    # As for the other floating-point types in Julia, we set the unbiased exponent to 0, and
+    # we draw `sz` bits at random to constitute the fractional part of a number in ``[1,2)``.
+    # We then subtract 1.0 to obtain a number in ``[0,1)``.
+    v = UInt32((UInt32(MicroFloatingPoints.bias(MicroFloatingPoints.Floatmu{szE,szf})) << szf) | f)
+    return MicroFloatingPoints.Floatmu{szE,szf}(v,nothing) - MicroFloatingPoints.Floatmu{szE,szf}(1.0)
 end
+
+
 
 end # Module

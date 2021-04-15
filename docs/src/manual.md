@@ -1,6 +1,6 @@
 ```@meta
 DocTestSetup = quote
-    using MicroFloatingPoints, MFPPlot, MFPRandom
+    using MicroFloatingPoints, MFPPlot, MFPRandom, Random, Distributions
 end
 CurrentModule = MicroFloatingPoints
 ```
@@ -152,7 +152,7 @@ issubnormal(x::Floatmu{szE,szf}) where {szE,szf}
 
 ### Conversions
 
-A `Floatmu` may converted from and to any of the standard floating-point type (`Float16`, `Float32`, `Float64`).
+A `Floatmu` may be converted from and to any of the standard floating-point type (`Float16`, `Float32`, `Float64`).
 
 ```@docs
 convert(::Type{Float16}, x::Floatmu{szE,szf}) where {szE, szf}
@@ -172,8 +172,7 @@ tryparse(::Type{Floatmu{szE,szf}}, str::AbstractString) where {szE, szf}
 
 ### Display
 
-Contrary to a `Float16`, which is displayed by default with an indication of its type, a
-`Floatmu` is displayed as a number alone with no indication of its type (much like a `Float64`).
+Contrary to a `Float16` or a `Float32`, which are displayed by default with an indication of their type, a `Floatmu` is displayed as a number alone with no indication of its type (much like a `Float64`).
 
 ```jldoctest
 julia> Floatmu{2,2}(0.25)
@@ -191,34 +190,135 @@ bitstring(x::Floatmu{szE,szf}) where {szE,szf}
 As for the standard floating-point types, it is possible to go from one `Floatmu` to the next using `nextfloat` and `prevfloat`.
 
 ```@docs
-prevfloat(x::Floatmu{szE,szf}) where {szE,szf}
-nextfloat(x::Floatmu{szE,szf}) where {szE,szf}
+prevfloat(x::Floatmu{szE,szf}, n::UInt32 = 1) where {szE,szf}
+nextfloat(x::Floatmu{szE,szf}, n::UInt32 = 1) where {szE,szf}
 ```
+
+A `FloatmuIterator` allows to iterate on a range of `Floatmu` in a more systematic way:
 
 ```@docs
 FloatmuIterator{szE,szf}
 ```
 
+!!! warning "Effect of rounding on iterations"
+    Keep in mind that the bounds of the iterator may need rounding when converted
+    to a `Floatmu`, so that the number of iterations may not be the one expected. 
+    Additionnally, the step chosen may induce more rounding at each iteration.
+	
+    #### Example
+    
+    ```julia
+    julia> [x for x in FloatmuIterator(Floatmu{2,2},-1.2,-0.2,0.3)]
+    4-element Array{Floatmu{2,2},1}:
+    -1.25
+    -1.0
+    -0.75
+    -0.5
+    
+    julia> FloatmuIterator(Floatmu{2,2},-1.2,-0.2,0.3)
+    FloatmuIterator{2,2}(-1.25, -0.25, 0.25)
+    ```
+	
+### Rounding
 
-<!--- ############################################### --->
+We have see in section [Creating a `Floatmu`](@ref) that each `Floatmu` retains the information whether the value it was created from required rounding or not.
 
+In addition to that mechanism, the `MicroFloatingPoints` module keeps a global variable that is set to `true` every time a `Floatmu` is created and rounding takes place. That variable is *sticky* (once true, it stays true until reset explictly to `false`). It can be checked with the `inexact()` method and reset with the `reset_inexact()` method.
 
 ```@docs
-nb_fp_numbers(a::Floatmu{szE,szf}, b::Floatmu{szE,szf}) where {szE,szf}
 inexact()
 reset_inexact()
 ```
+
+With these methods, one can check whether some computation needed rounding at some point:
+
+```jldoctest
+julia> reset_inexact() # hide
+
+julia> inexact()
+false
+
+julia> Floatmu{2,2}(2.0)+Floatmu{2,2}(0.25)
+2.0
+
+julia> inexact()
+true
+
+julia> reset_inexact()
+
+julia> Floatmu{2,2}(2.0)+Floatmu{2,2}(0.25)+Floatmu{2,2}(0.25)
+2.0
+
+julia> inexact()
+true
+```
+
+Note that, in the first example, the result of the computation needed rounding, while in the second example, the output is representable but one of the intermediary computation needed rounding.
+
 
 ## The `MFPRandom` module
 
 ```@meta
 CurrentModule = MFPRandom
 ```
+The `MFPRandom` module overloads [`rand`](https://docs.julialang.org/en/v1/stdlib/Random/#Base.rand) to offer `Floatmu` floating-point numbers drawn at random in ``[0,1)``. The method uses `Random.rand` under the hood. It is then affected in the same way by 
+`Random.seed!`.
 
-```@docs
-rand(::Type{Floatmu{szE,szf}}) where {szE,szf}
+
+```jldoctest random
+julia> Random.seed!(42);
+
+julia> rand(Floatmu{2,2})
+0.25
+
+julia> rand(Floatmu{2,2})
+0.0
 ```
 
+It is possible to draw `Floatmu` values at random in the same way as with other floating-point types:
+
+```jldoctest random
+julia> rand(Floatmu{2,2},5)
+5-element Array{Floatmu{2,2},1}:
+ 0.75
+ 0.5
+ 0.5
+ 0.75
+ 0.25
+```
+
+Using the `Distributions` package, one can also draw `Floatmu` numbers with other distributi
+ons:
+
+```jldoctest random
+julia> rand(Uniform(Floatmu{2,2}(-1.0),Floatmu{2,2}(1.0)))
+0.25
+```
+
+!!! warning "Using custom distributions"
+    One must be wary of very small `Floatmu` types when using other distributions than
+    ``U[0,1)`` as the computation involved to compute another distribution may 
+    easily involve larger numbers than can be represented with the type. Consider, for
+    example, the type `Floatmu{2,2}` whose largest positive finite value is `3.0`. 
+    If we decide to draw numbers in the domain ``[-2,2)``, we will call:
+    ```julia
+    rand(Uniform(Floatmu{2,2}(-2.0),Floatmu{2,2}(2.0)))
+    ```
+    To translate the distribution from ``[0,1)`` to ``[-2,2)``, the `Uniform` method
+    will draw a value ``x`` in ``[0,1)`` and apply the formula ``a+(b-a)x``, with
+    ``a=-2`` and ``b=2``. Unfortunately, ``b-a`` will then be 
+    ``\text{Floatmu\{2,2\}}(2.0)-\text{Floatmu}\{2,2\}(-2.0)``, which is rounded to 
+    `Infμ{2,2}`:
+    ```julia
+    julia> rand(Uniform(Floatmu{2,2}(-2.0),Floatmu{2,2}(2.0)))
+    Infμ{2,2}
+    
+    julia> rand(Uniform(Floatmu{2,2}(-2.0),Floatmu{2,2}(2.0)))
+    Infμ{2,2}
+    
+    ```
+    Consequently, we will always draw the same infinite value.
+	
 ## The `MFPPlot` module
 
 ```@meta

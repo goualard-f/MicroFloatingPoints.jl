@@ -261,7 +261,7 @@ julia> eps(Floatmu{2,2})
 0.25
 
 julia> eps(Floatmu{3,5})
-0.031
+0.0313
 
 julia> eps(Floatmu{8,23})==eps(Float32)
 true
@@ -903,10 +903,12 @@ end
 
 
 # Hack to use @printf with a format depending on the `Floatmu` used.
-variable_printf(io,x::Floatmu{szE,2}) where {szE} = @printf(io,"%.2g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,3}) where {szE} = @printf(io,"%.2g",convert(Float64,x))
+# Since @printf is a macro, it cannot be called with anything other than a constant
+# for the format string.
+variable_printf(io,x::Floatmu{szE,2}) where {szE} = @printf(io,"%.3g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,3}) where {szE} = @printf(io,"%.3g",convert(Float64,x))
 variable_printf(io,x::Floatmu{szE,4}) where {szE} = @printf(io,"%.3g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,5}) where {szE} = @printf(io,"%.2g",convert(Float64,x))
+variable_printf(io,x::Floatmu{szE,5}) where {szE} = @printf(io,"%.3g",convert(Float64,x))
 variable_printf(io,x::Floatmu{szE,6}) where {szE} = @printf(io,"%.3g",convert(Float64,x))
 variable_printf(io,x::Floatmu{szE,7}) where {szE} = @printf(io,"%.3g",convert(Float64,x))
 variable_printf(io,x::Floatmu{szE,8}) where {szE} = @printf(io,"%.3g",convert(Float64,x))
@@ -961,6 +963,9 @@ julia> bitstring(Floatmu{2,2}(0.5))
 
 julia> bitstring(Floatmu{8,23}(0.1))==bitstring(0.1f0)
 true
+
+julia> bitstring(Floatmu{8,23}(Inf)) == bitstring(Inf32)
+true
 ```
 """
 function bitstring(x::Floatmu{szE,szf}) where {szE,szf}
@@ -970,78 +975,89 @@ end
 
 
 """
-    prevfloat(x::Floatmu{szE,szf}) where {szE,szf}
+    prevfloat(x::Floatmu{szE,szf}, n::UInt32 = 1) where {szE,szf}
 
-Return the largest `Floatmu{szE,szf}` float strictly smaller than `x`. Return `NaNμ{szE,szf}` if
-`x` is *Not a Number*. Return `-Infμ{szE,szf}` if `x` is smaller or equal to `-floatmax(Floatmu{szE,szf})`.
+Return the `Floatmu{szE,szf}` float that is `n` floats before `x` in the natural order of floats. 
+Return `NaNμ{szE,szf}` if `x` is *Not a Number*. Return `-Infμ{szE,szf}` if there are less than `n` finite
+floats before `x` on the real line.
 
 # Examples
 ```jldoctest
-julia> prevfloat(Floatmu{2,2}(1.0))
-0.75
+julia> prevfloat(Floatmu{2,2}(1.0),2)
+0.5
 
 julia> prevfloat(Floatmu{2,2}(-0.0))
 -0.25
 
 julia> prevfloat(Floatmu{2,2}(Inf))
 3.5
+
+julia> prevfloat(Floatmu{2,2}(0.25))
+0.0
 ```
 
 """
-function prevfloat(x::Floatmu{szE,szf}) where {szE,szf}
-    if isinf(x)
-        return x < 0.0 ? x : floatmax(Floatmu{szE,szf})
-    end
+function prevfloat(x::Floatmu{szE,szf}, n::UInt32 = 1) where {szE,szf}
     if isnan(x)
         return x
     end
-    # x == ±0.0?
-    if x.v & ~sign_mask(Floatmu{szE,szf}) == 0
-        return -μ(Floatmu{szE,szf})
+    if n == 0
+        return x
     end
-    if signbit(x)
-        return Floatmu{szE,szf}(x.v+UInt32(1),nothing)
-    else
-        return Floatmu{szE,szf}(x.v-UInt32(1),nothing)
-    end
+    return -nextfloat(-x,n)
 end
+prevfloat(x::Floatmu{szE,szf}, n::Int) where {szE,szf} = prevfloat(x,UInt32(n))
 
 """
-    nextfloat(x::Floatmu{szE,szf}) where {szE,szf}
+    nextfloat(x::Floatmu{szE,szf}, n::UInt32 = 1) where {szE,szf}
 
-Return the smallest `Floatmu{szE,szf}` float strictly greater than `x`. Return `NaNμ{szE,szf}` if
-`x` is *Not a Number*. Return `Infμ{szE,szf}` if `x` is greater or equal to `floatmax(Floatmu{szE,szf})`.
+Return the `Floatmu{szE,szf}` float that is `n` floats after `x` in the natural order of floats. 
+Return `NaNμ{szE,szf}` if `x` is *Not a Number*. Return `Infμ{szE,szf}` if there are less than `n` finite
+floats after `x` on the real line.
 
 # Examples
 ```jldoctest
 julia> nextfloat(Floatmu{2,2}(3.5))
 Infμ{2,2}
 
-julia> nextfloat(Floatmu{2,2}(0.0))
-0.25
+julia> nextfloat(Floatmu{2,2}(0.0),3)
+0.75
 
 julia> nextfloat(Floatmu{2,2}(-Inf))
 -3.5
+
+julia> nextfloat(Floatmu{2,2}(-0.25))
+-0.0
 ```
 """
-function nextfloat(x::Floatmu{szE,szf}) where {szE,szf}
-    if isinf(x)
-        return x > 0.0 ? x : -floatmax(Floatmu{szE,szf})
-    end
+function nextfloat(x::Floatmu{szE,szf}, n::UInt32 = 1) where {szE,szf}
     if isnan(x)
         return x
     end
-    # x == ±0.0?
-    if x.v & ~sign_mask(Floatmu{szE,szf}) == 0
-        return μ(Floatmu{szE,szf})
+    if n == 0
+        return x
     end
-    if signbit(x)
-        return Floatmu{szE,szf}(x.v-UInt32(1),nothing)
-    else
-        return Floatmu{szE,szf}(x.v+UInt32(1),nothing)
+    if signbit(x) # x <= 0.0?
+        v = x.v & ~sign_mask(Floatmu{szE,szf}) # v = |x|.v
+        if v >= n # We will not create a positive number by adding n to v?
+            return Floatmu{szE,szf}((v-n) | sign_mask(Floatmu{szE,szf}),nothing) # -v
+        else
+            v = n - v
+            if v >= exponent_mask(Floatmu{szE,szf}) # (n-v) is larger than the representation of +oo?
+                return Infμ(Floatmu{szE,szf})
+            else
+                return Floatmu{szE,szf}(v,nothing)
+            end
+        end
+    else # x > 0.0?
+        if exponent_mask(Floatmu{szE,szf}) - n > x.v # We will not go beyond +oo when adding n to v?
+            return Floatmu{szE,szf}(x.v + n,nothing)
+        else
+            return Infμ(Floatmu{szE,szf})
+        end
     end
 end
-
+nextfloat(x::Floatmu{szE,szf}, n::Int) where {szE,szf} = nextfloat(x,UInt32(n))
 
 """
     nb_fp_numbers(a::Floatmu{szE,szf}, b::Floatmu{szE,szf}) where {szE,szf}
@@ -1139,7 +1155,10 @@ end
 
 Reset the global inexact flag to `false`.
 """
-reset_inexact() = global inexact_flag = false
+function reset_inexact()
+    global inexact_flag = false;
+    nothing
+end
 
 """
     inexact()
@@ -1149,10 +1168,25 @@ Return the value of the global inexact flag.
 inexact() = return inexact_flag
 
 """
-    FloatmuIterator{szE,szf}
+    FloatmuIterator(start::Floatmu{szE,szf},stop::Floatmu{szE,szf},
+                    step::Floatmu{szE,szf}) where {szE,szf}
+    FloatmuIterator(start::Floatmu{szE,szf},stop::Floatmu{szE,szf},
+                    step::Float64) where {szE,szf}
+    FloatmuIterator(start::Floatmu{szE,szf},stop::Floatmu{szE,szf},
+                    step::Int = 1) where {szE,szf}
+    FloatmuIterator(::Type{Floatmu{szE,szf}},start::Float64,stop::Float64,
+                    step::Int = 1) where {szE,szf}
+    FloatmuIterator(::Type{Floatmu{szE,szf}},start::Float64,stop::Float64,
+                    step::Float64) where {szE,szf}
 
-Iterator to generate all `Floatmu{szE,szf}` in the domain `[start,stop]`. The iterator
-can be initialized with two `Floatmu{szE,szf}` or with two `Float64`.
+Iterator to generate `Floatmu{szE,szf}` in the domain `[start,stop]`. The iterator
+can be initialized with two `Floatmu{szE,szf}` or with two `Float64`. 
+
+One may iterate from one float to the next (the default) or choose some step. 
+The step may be a number of floats or an amount to add.
+
+An ArgumentError is raised if the bounds are NaNs or if the step chosen is null 
+(or rounds to null when converted to a `Floatmu{szE,szf}`).
 
 # Examples
 ```jldoctest
@@ -1170,32 +1204,86 @@ julia> L2=[x for x = FloatmuIterator(Floatmu{2,2},0.0,1.0)]
  0.5
  0.75
  1.0
-
 ```
 """
 struct FloatmuIterator{szE,szf}
     first::Floatmu{szE,szf}
-#    step::Floatmu{szE,szf}
     last::Floatmu{szE,szf}
-    function FloatmuIterator(start::Floatmu{szE,szf},stop::Floatmu{szE,szf}) where {szE,szf}
-        return new{szE,szf}(start,stop)
+    step::Union{Int,Floatmu{szE,szf}}
+
+    function FloatmuIterator(start::Floatmu{szE,szf},stop::Floatmu{szE,szf},
+                             step::Floatmu{szE,szf}) where {szE,szf}
+        if isnan(start) || isnan(stop)
+            throw(ArgumentError("bounds of the iteration cannot be NaNs"))
+        end
+        if step == 0.0
+            throw(ArgumentError("the step shall be non-null"))
+        end
+        return new{szE,szf}(start,stop,step)
     end
-    function FloatmuIterator(::Type{Floatmu{szE,szf}},start::Float64,stop::Float64) where {szE,szf}
+    function FloatmuIterator(start::Floatmu{szE,szf},stop::Floatmu{szE,szf},
+                             step::Float64) where {szE,szf}
+        if isnan(start) || isnan(stop)
+            throw(ArgumentError("bounds of the iteration cannot be NaNs"))
+        end
+        if step == 0.0
+            throw(ArgumentError("the step shall be non-null"))
+        end
+        return new{szE,szf}(start,stop,Floatmu{szE,szf}(step))
+    end
+    function FloatmuIterator(start::Floatmu{szE,szf},stop::Floatmu{szE,szf},
+                             step::Int = 1) where {szE,szf}
+        if isnan(start) || isnan(stop)
+            throw(ArgumentError("bounds of the iteration cannot be NaNs"))
+        end
+        if step == 0
+            throw(ArgumentError("the step shall be non-null"))
+        end
+        return new{szE,szf}(start,stop,step)
+    end
+    function FloatmuIterator(::Type{Floatmu{szE,szf}},start::Float64,stop::Float64,
+                             step::Int = 1) where {szE,szf}
+        if isnan(start) || isnan(stop)
+            throw(ArgumentError("bounds of the iteration cannot be NaNs"))
+        end
+        if step == 0
+            throw(ArgumentError("the step shall be non-null"))
+        end
         return new{szE,szf}(Floatmu{szE,szf}(float64_to_uint32mu(start, szE, szf),nothing),
-                            Floatmu{szE,szf}(float64_to_uint32mu(stop, szE, szf),nothing))
+                            Floatmu{szE,szf}(float64_to_uint32mu(stop, szE, szf),nothing),step)
+    end
+    function FloatmuIterator(::Type{Floatmu{szE,szf}},start::Float64,stop::Float64,
+                             step::Float64) where {szE,szf}
+        if isnan(start) || isnan(stop)
+            throw(ArgumentError("bounds of the iteration cannot be NaNs"))
+        end
+        mustep = Floatmu{szE,szf}(step)
+        if mustep == 0.0
+            throw(ArgumentError("the step shall be non-null"))
+        end
+        return new{szE,szf}(Floatmu{szE,szf}(float64_to_uint32mu(start, szE, szf),nothing),
+                            Floatmu{szE,szf}(float64_to_uint32mu(stop, szE, szf),nothing),mustep)
     end
 end
 
 function iterate(iter::FloatmuIterator{szE,szf},state=iter.first) where {szE,szf}
     if state <= iter.last
-        return (state,nextfloat(state))
+        if iter.step isa Int
+            return (state,nextfloat(state,iter.step))
+        else
+            return (state,state+iter.step)
+        end
     else
         return nothing
     end
 end
 
 function length(iter::FloatmuIterator{szE,szf}) where {szE,szf}
-    return nb_fp_numbers(iter.first,iter.last)
+    if iter.step isa Int
+        return ceil(Int,nb_fp_numbers(iter.first,iter.last)/iter.step)
+    else
+        return ceil(Int,(Float64(iter.last)-Float64(iter.first))/Float64(iter.step))
+    end
 end
 
 function eltype(iter::FloatmuIterator{szE,szf}) where {szE,szf}
