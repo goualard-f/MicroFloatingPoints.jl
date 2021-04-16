@@ -1,4 +1,3 @@
-push!(LOAD_PATH,"../src")
 using Documenter, MicroFloatingPoints, MFPRandom, MFPPlot, Random
 
 DocMeta.setdocmeta!(MicroFloatingPoints,
@@ -20,5 +19,4 @@ makedocs(
 
 deploydocs(
     repo = "github.com/goualard-f/MicroFloatingPoints.jl.git",
-    devbranch = "main"
 )
