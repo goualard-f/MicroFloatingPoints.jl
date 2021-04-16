@@ -17,3 +17,8 @@ makedocs(
              "Developer Documentation" => "developer.md"
              ],
 )
+
+deploydocs(
+    repo = "github.com/goualard-f/MicroFloatingPoints.jl.git",
+    devbranch = "main"
+)
