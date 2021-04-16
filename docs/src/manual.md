@@ -18,7 +18,7 @@ Floatmu{szE,szf}
 
 ### Creating a `Floatmu`
 
-A `Floatmu` object may be created from a float from an existing floating-point type (`Float64`, `Float32`, `Float16`).
+A `Floatmu` object may be created from a float from an existing floating-point type (`Float16`, `Float32`, `Float64`).
 
 ```@setup constructor-examples
 push!(LOAD_PATH,pwd()*"/../../src") # hide
@@ -79,7 +79,7 @@ julia> Floatmu{8,7}(303)
 304.0
 ```
 
-It is possible to know the largest positive integer such that all smaller integers are representation without rounding using the [`Base.maxintfloat`](https://docs.julialang.org/en/v1/base/base/#Base.maxintfloat) method:
+It is possible to know the largest positive integer such that all smaller integers are represented without rounding using the [`Base.maxintfloat`](https://docs.julialang.org/en/v1/base/base/#Base.maxintfloat) method:
 
 ```jldoctest constructor-examples
 julia> maxintfloat(Floatmu{8,7})
@@ -97,7 +97,7 @@ false
 
 ### Characteristics of a `Floatmu`
 
-It is possible to obtain some characteristics of a `Floatmu` type by using standard Julia methods. Most of them are usually undocumented, being internal to the `Base` package. The intended audience for the `MicroFloatingPoints` package being probably more interested in these methods than the general public, we document them here.
+It is possible to obtain some characteristics of a `Floatmu` type by using standard Julia methods. Most of them are usually undocumented, being internal to the `Base` package. Since the intended audience for the `MicroFloatingPoints` package is probably more interested in these methods than the general public, we document them here.
 
 The [`Base.precision()`](https://docs.julialang.org/en/v1/base/numbers/#Base.precision) method returns the number of bits in the significand:
 
@@ -155,12 +155,7 @@ issubnormal(x::Floatmu{szE,szf}) where {szE,szf}
 A `Floatmu` may be converted from and to any of the standard floating-point type (`Float16`, `Float32`, `Float64`).
 
 ```@docs
-convert(::Type{Float16}, x::Floatmu{szE,szf}) where {szE, szf}
-convert(::Type{Float32}, x::Floatmu{szE,szf}) where {szE, szf}
-convert(::Type{Float64}, x::Floatmu{szE,szf}) where {szE, szf}
-convert(::Type{Floatmu{szE,szf}}, x::Float16)  where {szE,szf}
-convert(::Type{Floatmu{szE,szf}}, x::Float32)  where {szE,szf}
-convert(::Type{Floatmu{szE,szf}}, x::Float64)  where {szE,szf}
+convert
 ```
 
 A `Floatmu` may also be created from a string:
@@ -179,7 +174,7 @@ julia> Floatmu{2,2}(0.25)
 0.25
 ```
 
-It is also possible to display the internal representation of a `Floatmu{szE,szf}` as an ``1+\text{szE}+\text{szf}`` integer:
+It is also possible to display the internal representation of a `Floatmu{szE,szf}` as an ``1+\text{szE}+\text{szf}`` bit string:
 
 ```@docs
 bitstring(x::Floatmu{szE,szf}) where {szE,szf}
@@ -221,7 +216,7 @@ FloatmuIterator{szE,szf}
 	
 ### Rounding
 
-We have see in section [Creating a `Floatmu`](@ref) that each `Floatmu` retains the information whether the value it was created from required rounding or not.
+We have seen in section [Creating a `Floatmu`](@ref) that each `Floatmu` retains the information whether the value it was created from required rounding or not.
 
 In addition to that mechanism, the `MicroFloatingPoints` module keeps a global variable that is set to `true` every time a `Floatmu` is created and rounding takes place. That variable is *sticky* (once true, it stays true until reset explictly to `false`). It can be checked with the `inexact()` method and reset with the `reset_inexact()` method.
 
@@ -233,7 +228,7 @@ reset_inexact()
 With these methods, one can check whether some computation needed rounding at some point:
 
 ```jldoctest
-julia> reset_inexact() # hide
+julia> reset_inexact()
 
 julia> inexact()
 false
@@ -253,7 +248,7 @@ julia> inexact()
 true
 ```
 
-Note that, in the first example, the result of the computation needed rounding, while in the second example, the output is representable but one of the intermediary computation needed rounding.
+Note that, in the first example, the result of the computation needed rounding, while in the second example, the output is representable but one of the intermediary computation needed rounding. 
 
 
 ## The `MFPRandom` module
@@ -287,8 +282,7 @@ julia> rand(Floatmu{2,2},5)
  0.25
 ```
 
-Using the `Distributions` package, one can also draw `Floatmu` numbers with other distributi
-ons:
+Using the [`Distributions`](https://juliastats.org/Distributions.jl/stable/) package, one can also draw `Floatmu` numbers with other distributions:
 
 ```jldoctest random
 julia> rand(Uniform(Floatmu{2,2}(-1.0),Floatmu{2,2}(1.0)))
@@ -297,7 +291,7 @@ julia> rand(Uniform(Floatmu{2,2}(-1.0),Floatmu{2,2}(1.0)))
 
 !!! warning "Using custom distributions"
     One must be wary of very small `Floatmu` types when using other distributions than
-    ``U[0,1)`` as the computation involved to compute another distribution may 
+    ``U[0,1)`` as the computation necessary to compute another distribution may 
     easily involve larger numbers than can be represented with the type. Consider, for
     example, the type `Floatmu{2,2}` whose largest positive finite value is `3.0`. 
     If we decide to draw numbers in the domain ``[-2,2)``, we will call:
@@ -308,7 +302,8 @@ julia> rand(Uniform(Floatmu{2,2}(-1.0),Floatmu{2,2}(1.0)))
     will draw a value ``x`` in ``[0,1)`` and apply the formula ``a+(b-a)x``, with
     ``a=-2`` and ``b=2``. Unfortunately, ``b-a`` will then be 
     ``\text{Floatmu\{2,2\}}(2.0)-\text{Floatmu}\{2,2\}(-2.0)``, which is rounded to 
-    `Infμ{2,2}`:
+    `Infμ{2,2}`. Consequently, we will always draw the same infinite value:
+
     ```julia
     julia> rand(Uniform(Floatmu{2,2}(-2.0),Floatmu{2,2}(2.0)))
     Infμ{2,2}
@@ -317,16 +312,48 @@ julia> rand(Uniform(Floatmu{2,2}(-1.0),Floatmu{2,2}(1.0)))
     Infμ{2,2}
     
     ```
-    Consequently, we will always draw the same infinite value.
 	
 ## The `MFPPlot` module
 
 ```@meta
 CurrentModule = MFPPlot
 ```
-
+The `MFPPlot` module offers some methods to easily represent floating-point numbers.
 
 ```@docs
-real_line(start::Floatmu{szE,szf}, stop::Floatmu{szE,szf}) where {szE,szf}
-real_line(::Type{Floatmu{szE,szf}}) where {szE,szf}
+real_line
+```
+
+### Examples
+
+```@setup realline-example
+push!(LOAD_PATH,pwd()*"/../../src")
+using MicroFloatingPoints, MFPPlot, PyPlot
+plt.figure()
+```
+
+```@repl realline-example
+real_line(Floatmu{2,3}(-2.5),Floatmu{2,3}(1.0));
+savefig("realline_Floatmu23a.svg"); nothing # hide
+```
+
+```@raw html
+<div style="text-align: center">
+<img src="./realline_Floatmu23a.svg" alt="Floatmu{2,3} values in [-2.5, 1.0]" />
+</div>
+```
+
+```@setup realline-example
+plt.figure()
+```
+
+```@repl realline-example
+real_line(Floatmu{2,3});
+savefig("realline_Floatmu23b.svg"); nothing # hide
+```
+
+```@raw html
+<div style="text-align: center">
+<img src="./realline_Floatmu23b.svg" alt="Floatmu{2,3} finite and infinite values" />
+</div>
 ```

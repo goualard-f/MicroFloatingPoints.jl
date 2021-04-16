@@ -10,7 +10,7 @@ or equivalently, via the `Pkg` API:
 
 
 ```julia
-julia> import Pkg; Pkg.add("Documenter")
+julia> import Pkg; Pkg.add("MicroFloatingPoints")
 ```
 
 to install all relevant files.

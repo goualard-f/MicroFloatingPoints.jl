@@ -17,8 +17,8 @@ The `MicroFloatingPoints` package is organized into three modules:
 After having correctly installed the package (see [Installation](@ref)), we start our tour by loading the `MicroFloatingPoints` module:
 
 ```@setup realline
-push!(LOAD_PATH,pwd()*"/../../src") # hide
-using PyPlot # hide
+push!(LOAD_PATH,pwd()*"/../../src")
+using PyPlot
 ```
 
 ```@repl realline
@@ -102,7 +102,9 @@ plt.xticks(0:(length(V)-1),[string(V[i]) for i in 1:length(V)],rotation=90);
 savefig("exhaustive-rounding.svg"); nothing #hide
 ```
 
-We obtain the following matrix, where a green cell means that the sum of the values in row and column needs no rounding, while a yellow cell means that the result needs to be rounded.
+Note the use of a [`FloatmuIterator`](@ref) to enumerate all floating-point numbers in a range.
+
+We obtain the following matrix, where a green cell means that the sum of the values in row and column needs no rounding, while a yellow cell means that the result needs rounding to be represented by a `Floatmu{2,2}`.
 
 ```@raw html
 <div style="text-align: center">
@@ -112,7 +114,7 @@ We obtain the following matrix, where a green cell means that the sum of the val
 
 ## Random floats with `MFPRandom`
 
-Let us now draw some [`BFloat16`](https://en.wikipedia.org/wiki/Bfloat16_floating-point_format) floats uniformly at random in ``[0,1)`. We will use the `MFPRandom` module to overload the [`rand`](https://docs.julialang.org/en/v1/stdlib/Random/#Base.rand) method for the type `Floatmu`.
+Let us now draw some [`BFloat16`](https://en.wikipedia.org/wiki/Bfloat16_floating-point_format) floats uniformly at random in ``[0,1)``. We will use the `MFPRandom` module to overload the [`rand`](https://docs.julialang.org/en/v1/stdlib/Random/#Base.rand) method for the type `Floatmu`.
 
 ```@example randfreq
 push!(LOAD_PATH,pwd()*"/../../src") # hide
@@ -125,7 +127,7 @@ BFloat16 = Floatmu{8,7}
 
 ndraws=1000000
 plt.figure()
-plt.title("Drawing "*string(ndraws)*" values at random in BFloat16[0,1)")
+plt.title("Drawing $ndraws values at random in BFloat16[0,1)")
 T = [rand(BFloat16) for i in 1:ndraws]
 Tc = counter(T)
 nothing # hide

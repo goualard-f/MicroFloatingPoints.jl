@@ -1,8 +1,8 @@
 push!(LOAD_PATH,"../src")
-using Documenter, MicroFloatingPoints, MFPRandom, MFPPlot
+using Documenter, MicroFloatingPoints, MFPRandom, MFPPlot, Random
 
 DocMeta.setdocmeta!(MicroFloatingPoints,
-                    :DocTestSetup, :(using MicroFloatingPoints, MFPRandom, MFPPlot);
+                    :DocTestSetup, :(using MicroFloatingPoints, MFPRandom, MFPPlot, Random);
                     recursive=true)
 
 makedocs(
@@ -11,10 +11,9 @@ makedocs(
     modules = [MicroFloatingPoints, MFPRandom, MFPPlot],
     format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     pages = ["Home" => "index.md"
+             "Installation" => "installation.md"
              "A Guided Tour" => "guided-tour.md"
              "Manual" => "manual.md"
-             "Installation" => "installation.md"
              "Developer Documentation" => "developer.md"
              ],
-    #assets = ["assets/favicon.ico"]
 )

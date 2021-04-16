@@ -210,18 +210,21 @@ Emin(::Type{Floatmu{szE,szf}}) where {szE, szf} = Int32(1 - Emax(Floatmu{szE,szf
 """
     bias(::Type{Floatmu{szE,szf}}) where {szE, szf}
 
-Bias of the exponent for a `Floatmu{szE,szf}`
+Bias of the exponent for a `Floatmu{szE,szf}`.
+
+# Examples
 
 ```jldoctest
 julia> bias(Floatmu{8,23}) 
-127
+0x0000007f
+```
 """
 bias(::Type{Floatmu{szE,szf}}) where {szE, szf} = Emax(Floatmu{szE,szf})
 
 """
     Infμ(::Type{Floatmu{szE,szf}}) where {szE,szf}
 
-Positive infinite value in the format `Floatmu{szE,szf}`
+Positive infinite value in the format `Floatmu{szE,szf}`.
 
 # Examples
 ```jldoctest
@@ -234,9 +237,9 @@ Infμ(::Type{Floatmu{szE,szf}}) where {szE, szf} = Floatmu{szE,szf}(exponent_mas
 """
     NaNμ(::Type{Floatmu{szE,szf}}) where {szE, szf}
 
-NaN in the format `Floatmu{szE,szf}`
+NaN in the format `Floatmu{szE,szf}`.
 
-The canonical NaN value has a sign bit set ot zero and all bits of the fractional part set to zero, except
+The canonical NaN value has a sign bit set to zero and all bits of the fractional part set to zero except
 for the leftmost one.
 
 # Examples
@@ -351,6 +354,7 @@ Return `true` if `x` is signed and `false` otherwise. The result for a NaN may v
 on the value of its sign bit.
 
 # Examples
+
 ```jldoctest
 julia> signbit(Floatmu{2,3}(1.5))
 false
@@ -360,9 +364,13 @@ true
 
 The function differentiates between ``-0.0`` and ``+0.0`` even though both
 values test equal.
+
 ```jldoctest
 julia> signbit(Floatmu{2,3}(-0.0))
 true
+
+julia> signbit(Floatmu{2,3}(0.0))
+false
 ```
 """
 function signbit(x::Floatmu{szE,szf}) where {szE, szf}
@@ -573,7 +581,7 @@ end
 """ 
     double_fields(x::Float64)
 
-Return the sign, biased exponent, and fractional part of a Float64 number (**internal use**)
+Return the sign, biased exponent, and fractional part of a Float64 number.
 """
 function double_fields(x::Float64)
     v = reinterpret(UInt64,x)
@@ -591,7 +599,7 @@ Round to nearest-even a 52 bits fractional part to `szf` bits
 Return a triplet composed of the rounded fractional part, a correction to the exponent
 if a bit from the fractional part spilled into the integer part, and a rounding direction
 (by default: -1, by excess: 1, no rounding: 0) if some rounding had to take place. 
-(**internal use**)
+
 """
 function roundfrac(f,szf)
     # Creating the mask for the bits of `f` we cannot store
@@ -636,8 +644,8 @@ end
 
 Round `x` to the precision of a `Floatmu{szE,szf}` and 
 return a pair composed of the bits representation right-aligned in a `UInt32` together
-with a rounding direction if rounding took place (by default: -1, by excess: 1, no rounding: 0)
-(**internal use**)
+with a rounding direction if rounding took place (by default: -1, by excess: 1, no rounding: 0).
+
 """
 function float64_to_uint32mu(x::Float64,szE,szf)::Tuple{UInt32,Int64}
     if isnan(x)
@@ -695,16 +703,43 @@ end
 
 """
     convert(::Type{Float64}, x::Floatmu{szE,szf}) where {szE, szf}
+    convert(::Type{Float32}, x::Floatmu{szE,szf}) where {szE, szf}
+    convert(::Type{Float16}, x::Floatmu{szE,szf}) where {szE, szf}
+    convert(::Type{Floatmu{szE,szf} where {szE,szf}}, x::Float64)
+    convert(::Type{Floatmu{szE,szf} where {szE,szf}}, x::Float32)
+    convert(::Type{Floatmu{szE,szf} where {szE,szf}}, x::Float16)
 
-Convert a `Floatmu` to a double precision float. The conversion never introduces
-errors since `Float64` objects have at least twice the precision of the fractional 
-part of a `Floatmu` object.
+Convert a `Floatmu` to a double, single or half precision float, or vice-versa. For the double precision, 
+the conversion never introduces errors since `Float64` objects have at least twice the precision 
+of the fractional part of a `Floatmu` object.
 
 # Examples
+
 ```jldoctest
 julia> convert(Float64,Floatmu{8,23}(0.1))
 0.10000000149011612
+
+julia> convert(Float32,Floatmu{8,23}(0.1)) == 0.1f0
+true
+
+julia> convert(Float32,Floatmu{5,10}(0.1)) == Float16(0.1)
+true
+
+julia> convert(Floatmu{2,4},0.1)
+0.125
+
+julia> convert(Floatmu{2,4},0.1f0)
+0.125
+
+julia> convert(Floatmu{2,4},Float16(0.1))
+0.125
+
+julia> Floatmu{5,10}(0.1)==Float16(0.1)
+true
+```
 """
+function convert end
+
 function convert(::Type{Float64}, x::Floatmu{szE,szf}) where {szE, szf}
     if isnan(x)
         return NaN
@@ -728,82 +763,22 @@ function convert(::Type{Float64}, x::Floatmu{szE,szf}) where {szE, szf}
     end
 end
 
-"""
-    convert(::Type{Float32}, x::Floatmu{szE,szf}) where {szE, szf}
-
-Convert a `Floatmu` to a single precision float.
-
-# Examples
-```jldoctest
-julia> convert(Float32,Floatmu{8,23}(0.1)) == 0.1f0
-true
-```
-"""
 function convert(::Type{Float32}, x::Floatmu{szE,szf}) where {szE, szf}
     return Float32(convert(Float64,x))
 end
 
-"""
-    convert(::Type{Float16}, x::Floatmu{szE,szf}) where {szE, szf}
-
-Convert a `Floatmu` to a half precision float.
-
-# Examples
-```jldoctest
-julia> convert(Float32,Floatmu{5,10}(0.1)) == Float16(0.1)
-true
-```
-"""
 function convert(::Type{Float16}, x::Floatmu{szE,szf}) where {szE, szf}
     return Float16(convert(Float64,x))
 end
 
-"""
-    convert(::Type{Floatmu{szE,szf} where {szE,szf}}, x::Float64)
-
-Convert a double precision float to a `Floatmu`. Rounding may occur.
-
-#Examples
-
-```jldoctest
-julia> convert(Floatmu{2,4},0.1)
-0.125
-```
-"""
 function convert(::Type{Floatmu{szE,szf}}, x::Float64)  where {szE,szf}
     return Floatmu{szE,szf}(float64_to_uint32mu(x,szE,szf),nothing)
 end
 
-
-"""
-    convert(::Type{Floatmu{szE,szf} where {szE,szf}}, x::Float32)
-
-Convert a single precision float to a `Floatmu`. Rounding may occur.
-
-#Examples
-```jldoctest
-julia> convert(Floatmu{2,4},0.1f0)
-0.125
-```
-"""
 function convert(::Type{Floatmu{szE,szf}}, x::Float32)  where {szE,szf}
     return Floatmu{szE,szf}(float64_to_uint32mu(Float64(x),szE,szf),nothing)
 end
 
-"""
-    convert(::Type{Floatmu{szE,szf} where {szE,szf}}, x::Float16)
-
-Convert a half precision float to a `Floatmu`. Rounding may occur.
-
-#Examples
-```jldoctest
-julia> convert(Floatmu{2,4},Float16(0.1))
-0.125
-
-julia> Floatmu{5,10}(0.1)==Float16(0.1)
-true
-```
-"""
 function convert(::Type{Floatmu{szE,szf}}, x::Float16)  where {szE,szf}
     return Floatmu{szE,szf}(float64_to_uint32mu(Float64(x),szE,szf),nothing)
 end
@@ -848,7 +823,7 @@ thrown.
 # Examples
 ```jldoctest
 julia> parse(Floatmu{5,7},"0.1a")
-ERROR: ArgumentError: cannot parse "0.1a" as Floatmu{5,7}
+ERROR: ArgumentError: cannot parse "0.1a" as a Floatmu{5,7}
 ```
 """
 function parse(::Type{Floatmu{szE,szf}}, str::AbstractString) where {szE, szf}
@@ -856,7 +831,7 @@ function parse(::Type{Floatmu{szE,szf}}, str::AbstractString) where {szE, szf}
         return Floatmu{szE,szf}(parse(Float64,str))
     catch err
         if isa(err,ArgumentError)
-            throw(ArgumentError("cannot parse \"$str\" as Floatmu{$szE,$szf}"))
+            throw(ArgumentError("cannot parse \"$str\" as a Floatmu{$szE,$szf}"))
         else
             rethrow(err)
         end
@@ -1061,7 +1036,7 @@ nextfloat(x::Floatmu{szE,szf}, n::Int) where {szE,szf} = nextfloat(x,UInt32(n))
 
 """
     nb_fp_numbers(a::Floatmu{szE,szf}, b::Floatmu{szE,szf}) where {szE,szf}
--
+
 Return the number of floats in the interval ``[a,b]``. If ``a > b``, throw
 an `ArgumentError` exception.
 
@@ -1071,6 +1046,7 @@ julia> nb_fp_numbers(Floatmu{2,2}(-0.0),Floatmu{2,2}(0.0))
 1
 julia> nb_fp_numbers(Floatmu{2,2}(3.0),Floatmu{2,2}(3.5))
 2
+```
 """
 function nb_fp_numbers(a::Floatmu{szE,szf}, b::Floatmu{szE,szf}) where {szE,szf}
     if a > b
@@ -1154,6 +1130,7 @@ end
     reset_inexact()
 
 Reset the global inexact flag to `false`.
+
 """
 function reset_inexact()
     global inexact_flag = false;
@@ -1179,30 +1156,28 @@ inexact() = return inexact_flag
     FloatmuIterator(::Type{Floatmu{szE,szf}},start::Float64,stop::Float64,
                     step::Float64) where {szE,szf}
 
-Iterator to generate `Floatmu{szE,szf}` in the domain `[start,stop]`. The iterator
+Iterator to generate all `Floatmu{szE,szf}` in the domain `[start,stop]`. The iterator
 can be initialized with two `Floatmu{szE,szf}` or with two `Float64`. 
 
 One may iterate from one float to the next (the default) or choose some step. 
 The step may be a number of floats or an amount to add.
 
-An ArgumentError is raised if the bounds are NaNs or if the step chosen is null 
-(or rounds to null when converted to a `Floatmu{szE,szf}`).
+An ArgumentError is raised if the bounds are NaNs or if the step chosen is zero
+(or rounds to zero when converted to a `Floatmu{szE,szf}`).
 
 # Examples
 ```jldoctest
-julia> L=[x for x = FloatmuIterator(Floatmu{2,2}(0.0),Floatmu{2,2}(1.0))]
+julia> L=[x for x = FloatmuIterator(Floatmu{2,2}(0.0), Floatmu{2,2}(1.0))]
 5-element Array{Floatmu{2,2},1}:
  0.0
  0.25
  0.5
  0.75
  1.0
-julia> L2=[x for x = FloatmuIterator(Floatmu{2,2},0.0,1.0)]
-5-element Array{Floatmu{2,2},1}:
+julia> L2=[x for x = FloatmuIterator(Floatmu{2,2}, 0.0, 1.0, 2)]
+3-element Array{Floatmu{2,2},1}:
  0.0
- 0.25
  0.5
- 0.75
  1.0
 ```
 """

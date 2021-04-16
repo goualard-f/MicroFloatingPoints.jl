@@ -27,13 +27,19 @@ import MicroFloatingPoints
 """
     irandint(rng::Random.AbstractRNG, n::Int64)
 
-Draw a n bits integer at **random**.
+Draw a `n` bits integer at *random*.
 
 First, compute a 64 bits integer, then discard the lowest `(64-n)` bits, which 
 are often the less *random* ones.
+
+Throw an ArgumentError exception if `n` is strictly greater than 64.
+
 """
 function irandint(rng::Random.AbstractRNG, n::Int64)
-    return rand(UInt64) >> (64-n)
+    if n > 64
+        throw(ArgumentError("the second argument must be smaller or equal to 64"))
+    end
+    return rand(rng,UInt64) >> (64-n)
 end
 
 
