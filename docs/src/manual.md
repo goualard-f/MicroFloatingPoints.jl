@@ -18,7 +18,7 @@ The central element of the `MicroFloatingPoints` package is the floating-point t
 Floatmu{szE,szf}
 ```
 
-### Creating a `Floatmu`
+### Creating a `Floatmu` float
 
 A `Floatmu` object may be created from a float from a standard floating-point type (`Float16`, `Float32`, `Float64`).
 
