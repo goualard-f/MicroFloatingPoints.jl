@@ -1,6 +1,8 @@
 ```@meta
 DocTestSetup = quote
-    using MicroFloatingPoints, MFPPlot, MFPRandom, Random, Distributions
+	using Distributions, Random
+    using MicroFloatingPoints
+	using MicroFloatingPoints.MFPPlot, MicroFloatingPoints.MFPRandom
 end
 CurrentModule = MicroFloatingPoints
 ```
@@ -204,7 +206,7 @@ FloatmuIterator{szE,szf}
     
     ```julia
     julia> [x for x in FloatmuIterator(Floatmu{2,2},-1.2,-0.2,0.3)]
-    4-element Array{Floatmu{2,2},1}:
+    4-element Vector{Floatmu{2,2}}:
     -1.25
     -1.0
     -0.75
@@ -251,42 +253,33 @@ true
 Note that, in the first example, the result of the computation needed rounding, while in the second example, the output is representable but one of the intermediary computation needed rounding. 
 
 
-## The `MFPRandom` module
+## The `MicroFloatingPoints.MFPRandom` module
 
 ```@meta
-CurrentModule = MFPRandom
+CurrentModule = MicroFloatingPoints.MFPRandom
 ```
-The `MFPRandom` module overloads [`rand`](https://docs.julialang.org/en/v1/stdlib/Random/#Base.rand) to offer `Floatmu` floating-point numbers drawn at random in ``[0,1)``. The method uses `Random.rand` under the hood. It is then affected in the same way by 
+The `MicroFloatingPoints.MFPRandom` module overloads [`rand`](https://docs.julialang.org/en/v1/stdlib/Random/#Base.rand) to offer `Floatmu` floating-point numbers drawn at random in ``[0,1)``. The method uses `Random.rand` under the hood. It is then affected in the same way by 
 `Random.seed!`.
 
 
-```jldoctest random
+```repl random
 julia> Random.seed!(42);
 
 julia> rand(Floatmu{2,2})
-0.25
 
 julia> rand(Floatmu{2,2})
-0.0
 ```
 
 It is possible to draw `Floatmu` values at random in the same way as with other floating-point types:
 
-```jldoctest random
+```repl random
 julia> rand(Floatmu{2,2},5)
-5-element Array{Floatmu{2,2},1}:
- 0.75
- 0.5
- 0.5
- 0.75
- 0.25
 ```
 
 Using the [`Distributions`](https://juliastats.org/Distributions.jl/stable/) package, one can also draw `Floatmu` numbers with other distributions:
 
-```jldoctest random
+```repl random
 julia> rand(Uniform(Floatmu{2,2}(-1.0),Floatmu{2,2}(1.0)))
-0.25
 ```
 
 !!! warning "Using custom distributions"
@@ -306,19 +299,19 @@ julia> rand(Uniform(Floatmu{2,2}(-1.0),Floatmu{2,2}(1.0)))
 
     ```julia
     julia> rand(Uniform(Floatmu{2,2}(-2.0),Floatmu{2,2}(2.0)))
-    Infμ{2,2}
+    Infμ{2, 2}
     
     julia> rand(Uniform(Floatmu{2,2}(-2.0),Floatmu{2,2}(2.0)))
-    Infμ{2,2}
+    Infμ{2, 2}
     
     ```
 	
-## The `MFPPlot` module
+## The `MicroFloatingPoints.MFPPlot` module
 
 ```@meta
-CurrentModule = MFPPlot
+CurrentModule = MicroFloatingPoints.MFPPlot
 ```
-The `MFPPlot` module offers some methods to easily represent floating-point numbers.
+The `MicroFloatingPoints.MFPPlot` module offers some methods to easily represent floating-point numbers.
 
 ```@docs
 real_line
@@ -328,7 +321,7 @@ real_line
 
 ```@setup realline-example
 push!(LOAD_PATH,pwd()*"/../../src")
-using MicroFloatingPoints, MFPPlot, PyPlot
+using MicroFloatingPoints, MicroFloatingPoints.MFPPlot, PyPlot
 plt.figure()
 ```
 

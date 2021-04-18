@@ -21,7 +21,7 @@
 module MFPRandom
 
 import Random
-import MicroFloatingPoints
+import ..MicroFloatingPoints
 
 
 """

@@ -21,8 +21,7 @@
 using Test
 using TestSetExtensions
 
-push!(LOAD_PATH,pwd()*"/../src/")
-using MicroFloatingPoints
+using MicroFloatingPoints, MicroFloatingPoints.MFPRandom, MicroFloatingPoints.MFPPlot
 
 # Call "julia runtests.jl [tests1] [tests2] ..."
 # to launch only the tests in `test1.jl`, `test2.jl`, ...

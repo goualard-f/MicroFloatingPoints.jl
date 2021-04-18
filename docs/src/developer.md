@@ -1,6 +1,8 @@
 ```@meta
 DocTestSetup = quote
-    using MicroFloatingPoints, Random, MFPPlot, MFPRandom
+	using Random
+    using MicroFloatingPoints
+	using MicroFloatingPoints.MFPPlot, MicroFloatingPoints.MFPRandom
 end
 CurrentModule = MicroFloatingPoints
 ```
@@ -33,10 +35,10 @@ MicroFloatingPoints.roundfrac(f,szf)
 MicroFloatingPoints.float64_to_uint32mu(x::Float64,szE,szf)
 ```
 
-## The `MFPRandom` module
+## The `MicroFloatingPoints.MFPRandom` module
 
 ```@meta
-CurrentModule = MFPRandom
+CurrentModule = MicroFloatingPoints.MFPRandom
 ```
 
 ```@setup devel-rand
@@ -44,15 +46,11 @@ using Random
 ```
 
 ```@docs
-MFPRandom.irandint(rng::Random.AbstractRNG, n::Int64)
+MicroFloatingPoints.MFPRandom.irandint(rng::Random.AbstractRNG, n::Int64)
 ```
 
 ### Examples
 
-```jldoctest devel-rand
-julia> MFPRandom.irandint(Random.MersenneTwister(42),23)
-0x000000000026cb47
-
-julia> MFPRandom.irandint(MersenneTwister(42),65)
-ERROR: ArgumentError: the second argument must be smaller or equal to 64
+```repl devel-rand
+julia> MicroFloatingPoints.MFPRandom.irandint(Random.MersenneTwister(42),23)
 ```

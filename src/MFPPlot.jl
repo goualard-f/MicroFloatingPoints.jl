@@ -21,7 +21,7 @@
 module MFPPlot
 
 using PyPlot
-using MicroFloatingPoints
+using ..MicroFloatingPoints
 
 export real_line
 

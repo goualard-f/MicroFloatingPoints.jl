@@ -1,6 +1,7 @@
 ```@meta
 DocTestSetup = quote
-    using MicroFloatingPoints, MFPPlot, MFPRandom
+    using MicroFloatingPoints
+	using MicroFloatingPoints.MFPPlot, MicroFloatingPoints.MFPRandom
 end
 CurrentModule = MicroFloatingPoints
 ```
@@ -11,8 +12,8 @@ CurrentModule = MicroFloatingPoints
 The `MicroFloatingPoints` package is organized into three modules:
 
 - `MicroFloatingPoints`: the main module containing the definition of the parameterized type `Floatmu` and the associated methods;
-- `MFPPlot`: a module offering various graphical ways to display `Floatmu` floating-point numbers;
-- `MFPRandom`: the module overloading [`Random.rand`](https://docs.julialang.org/en/v1/stdlib/Random/#Base.rand) to produce `Floatmu` random values.
+- `MicroFloatingPoints.MFPPlot`: a module offering various graphical ways to display `Floatmu` floating-point numbers;
+- `MicroFloatingPoints.MFPRandom`: the module overloading [`Random.rand`](https://docs.julialang.org/en/v1/stdlib/Random/#Base.rand) to produce `Floatmu` random values.
 
 After having correctly installed the package (see [Installation](@ref)), we start our tour by loading the `MicroFloatingPoints` module:
 
@@ -44,11 +45,11 @@ Note that this value is a [subnormal number](https://en.wikipedia.org/wiki/Denor
 ```@repl realline
 floatmin(MuFP)
 ```
-## Graphics with `MFPPlot`
+## Graphics with `MicroFloatingPoints.MFPPlot`
 
-To better assess what we can do with such a small type, let us display all finite representable values on the real line. The `MFPPlot` module has just the right method:
+To better assess what we can do with such a small type, let us display all finite representable values on the real line. The `Plot` module has just the right method:
 ```@repl realline
-using MFPPlot
+using MicroFloatingPoints.MFPPlot
 real_line(-floatmax(MuFP),floatmax(MuFP));
 savefig("mufp_realline.svg"); nothing # hide
 ```
@@ -112,16 +113,16 @@ We obtain the following matrix, where a green cell means that the sum of the val
 </div>
 ```
 
-## Random floats with `MFPRandom`
+## Random floats with `MicroFloatingPoints.MFPRandom`
 
-Let us now draw some [`BFloat16`](https://en.wikipedia.org/wiki/Bfloat16_floating-point_format) floats uniformly at random in ``[0,1)``. We will use the `MFPRandom` module to overload the [`rand`](https://docs.julialang.org/en/v1/stdlib/Random/#Base.rand) method for the type `Floatmu`.
+Let us now draw some [`BFloat16`](https://en.wikipedia.org/wiki/Bfloat16_floating-point_format) floats uniformly at random in ``[0,1)``. We will use the `MicroFloatingPoints.MFPRandom` module to overload the [`rand`](https://docs.julialang.org/en/v1/stdlib/Random/#Base.rand) method for the type `Floatmu`.
 
 ```@example randfreq
 push!(LOAD_PATH,pwd()*"/../../src") # hide
 using DataStructures
 using PyPlot
 using MicroFloatingPoints
-using MFPRandom
+using MicroFloatingPoints.MFPRandom
 
 BFloat16 = Floatmu{8,7}
 

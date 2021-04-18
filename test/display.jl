@@ -3,9 +3,9 @@
     show(io,Floatmu{2,2}(0.24))
     @test String(take!(io)) == string(0.25)
     show(io,Floatmu{2,2}(NaN))
-    @test String(take!(io)) == "NaNμ{2,2}"
+    @test String(take!(io)) == "NaNμ{2, 2}"
     show(io,Floatmu{2,2}(Inf))
-    @test String(take!(io)) == "Infμ{2,2}"
+    @test String(take!(io)) == "Infμ{2, 2}"
     show(io,Floatmu{2,2}(-0.0))
     @test String(take!(io)) == "-0.0"
     @test string(Floatmu{8,23}(0.1)) == string(Float32(0.1))

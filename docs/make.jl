@@ -1,13 +1,14 @@
-using Documenter, MicroFloatingPoints, MFPRandom, MFPPlot, Random
+using Documenter, Random
+using MicroFloatingPoints
+using MicroFloatingPoints.MFPRandom
+using MicroFloatingPoints.MFPPlot
 
-DocMeta.setdocmeta!(MicroFloatingPoints,
-                    :DocTestSetup, :(using MicroFloatingPoints, MFPRandom, MFPPlot, Random);
-                    recursive=true)
+DocMeta.setdocmeta!(MicroFloatingPoints, :DocTestSetup, :(using MicroFloatingPoints, MicroFloatingPoints.MFPRandom, MicroFloatingPoints.MFPPlot); recursive=true)
 
 makedocs(
     sitename="The MicroFloatingPoints Documentation",
     authors = "Frédéric Goualard",
-    modules = [MicroFloatingPoints, MFPRandom, MFPPlot],
+    modules = [MicroFloatingPoints, MicroFloatingPoints.MFPRandom, MicroFloatingPoints.MFPPlot],
     format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     pages = ["Home" => "index.md"
              "Installation" => "installation.md"
