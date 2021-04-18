@@ -20,7 +20,7 @@ Floatmu{szE,szf}
 
 ### Creating a `Floatmu`
 
-A `Floatmu` object may be created from a float from an existing floating-point type (`Float16`, `Float32`, `Float64`).
+A `Floatmu` object may be created from a float from a standard floating-point type (`Float16`, `Float32`, `Float64`).
 
 ```@setup constructor-examples
 push!(LOAD_PATH,pwd()*"/../../src") # hide
