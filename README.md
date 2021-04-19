@@ -2,6 +2,21 @@
 
 *The MicroFloatingPoints package defines the `Floatmu` parametric type to manipulate [IEEE 754 standard](https://en.wikipedia.org/wiki/IEEE_754)-compliant floating-point numbers with a very small size (from 5 bits up to 32 bits).*
 
+### Example of use
+
+Adding `0.25` and `2.0` in a floating-point format with 1 bit for the sign (implied), 2 bits for the exponent, and 2 bits for the fractional part (3 bits for the whole significand with the *hidden bit*), and testing whether the result had to be rounded:
+
+``` julia
+julia> using MicroFloatingPoints
+
+julia> Floatmu{2,2}(0.25)+Floatmu{2,2}(2.0)
+2.0
+
+julia> inexact()
+true
+```
+
+
 ## Installation
 
 The package can be installed with the Julia package manager. From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
