@@ -18,7 +18,6 @@ The `MicroFloatingPoints` package is organized into three modules:
 After having correctly installed the package (see [Installation](@ref)), we start our tour by loading the `MicroFloatingPoints` module:
 
 ```@setup realline
-push!(LOAD_PATH,pwd()*"/../../src")
 using PyPlot
 ```
 
@@ -72,7 +71,6 @@ The type `MuFP` is so small that we can easily perform exhaustive searches with 
 to, respectively, test whether the preceding computation needed rounding and to reset the global *inexact flag:*
 
 ```@setup exhaustive-rounding
-push!(LOAD_PATH,pwd()*"/../../src")
 using MicroFloatingPoints
 using PyPlot
 MuFP = Floatmu{2,2}
@@ -118,7 +116,6 @@ We obtain the following matrix, where a green cell means that the sum of the val
 Let us now draw some [`BFloat16`](https://en.wikipedia.org/wiki/Bfloat16_floating-point_format) floats uniformly at random in ``[0,1)``. We will use the `MicroFloatingPoints.MFPRandom` module to overload the [`rand`](https://docs.julialang.org/en/v1/stdlib/Random/#Base.rand) method for the type `Floatmu`.
 
 ```@example randfreq
-push!(LOAD_PATH,pwd()*"/../../src") # hide
 using DataStructures
 using PyPlot
 using MicroFloatingPoints
@@ -157,7 +154,6 @@ savefig("randfreq-bfloat16.svg"); nothing # hide
 The `BFloat16` and `Float16` formats both represent floating-point numbers with 16 bits. The `BFloat16` trades precision for a larger range. Let us compare the results obtained when summing the values of a vector with both types:
 
 ```@setup mixed-precision
-push!(LOAD_PATH,pwd()*"/../../src")
 using MicroFloatingPoints
 using Random
 using Distributions

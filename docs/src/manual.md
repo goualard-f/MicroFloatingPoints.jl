@@ -23,7 +23,6 @@ Floatmu{szE,szf}
 A `Floatmu` object may be created from a float from a standard floating-point type (`Float16`, `Float32`, `Float64`).
 
 ```@setup constructor-examples
-push!(LOAD_PATH,pwd()*"/../../src") # hide
 using MicroFloatingPoints
 ```
 
@@ -218,7 +217,7 @@ FloatmuIterator{szE,szf}
 	
 ### Rounding
 
-We have seen in section [Creating a `Floatmu`](@ref) that each `Floatmu` retains the information whether the value it was created from required rounding or not.
+We have seen in section [Creating a `Floatmu` float](@ref) that each `Floatmu` retains the information whether the value it was created from required rounding or not.
 
 In addition to that mechanism, the `MicroFloatingPoints` module keeps a global variable that is set to `true` every time a `Floatmu` is created and rounding takes place. That variable is *sticky* (once true, it stays true until reset explictly to `false`). It can be checked with the `inexact()` method and reset with the `reset_inexact()` method.
 
@@ -320,7 +319,6 @@ real_line
 ### Examples
 
 ```@setup realline-example
-push!(LOAD_PATH,pwd()*"/../../src")
 using MicroFloatingPoints, MicroFloatingPoints.MFPPlot, PyPlot
 plt.figure()
 ```
