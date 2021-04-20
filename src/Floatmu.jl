@@ -1137,6 +1137,56 @@ Return the value of the global inexact flag.
 """
 inexact() = return inexact_flag
 
+
+"""
+    eligible_step(start::Floatmu{szE,szf}, stop::Floatmu{szE,szf}) where {szE,szf}
+    eligible_step(::Type{Floatmu{szE,szf}}, start::Float64, stop::Float64) where {szE,szf}
+
+Return the smallest `Floatmu{szE,szf}` eligible step allowed to iterate through the domain
+`[start,stop]`.
+
+# Examples
+
+```jldoctest
+julia> eligible_step(Floatmu{2,2}(-0.5),Floatmu{2,2}(2.5))
+0.5
+```
+"""
+function eligible_step end
+
+function eligible_step(start::Floatmu{szE,szf}, stop::Floatmu{szE,szf}) where {szE,szf}
+    maxi = max(abs(start),abs(stop))
+    return maxi - prevfloat(maxi) # The difference of two consecutive floats is always representable
+end
+
+function eligible_step(::Type{Floatmu{szE,szf}}, start::Float64, stop::Float64) where {szE,szf}
+    return eligible_step(Floatmu{szE,szf}(start),Floatmu{szE,szf}(stop))
+end
+
+
+"""
+    check_eligibility_step(start::Floatmu{szE,szf}, stop::Floatmu{szE,szf},
+                           step::Floatmu{szE,szf}) where {szE,szf}
+
+Check whether the step `step` can be reliability used for the domain [start, stop].
+Throw an ArgumentError exception in the negative.
+"""
+function check_eligibility_step(start::Floatmu{szE,szf}, stop::Floatmu{szE,szf},
+                                step::Floatmu{szE,szf}) where {szE,szf}
+    if isnan(start) || isnan(stop) || isinf(start) || isinf(stop)
+        throw(ArgumentError("bounds of the iteration cannot be NaNs or infinities"))
+    end
+    if step == 0.0
+        throw(ArgumentError("the step cannot be zero"))
+    end
+    # Finding the largest distance between two floats in the domain
+    eligible = eligible_step(start,stop)
+    if step < eligible
+        throw(ArgumentError("the step cannot be reliably used. Use a step greater or equal to $eligible"))
+    end
+end
+
+
 """
     FloatmuIterator(start::Floatmu{szE,szf},stop::Floatmu{szE,szf},
                     step::Floatmu{szE,szf}) where {szE,szf}
@@ -1155,8 +1205,26 @@ can be initialized with two `Floatmu{szE,szf}` or with two `Float64`.
 One may iterate from one float to the next (the default) or choose some step. 
 The step may be a number of floats or an amount to add.
 
-An ArgumentError is raised if the bounds are NaNs or if the step chosen is zero
-(or rounds to zero when converted to a `Floatmu{szE,szf}`).
+An ArgumentError is raised if the bounds are NaNs, if the step chosen is zero
+(or rounds to zero when converted to a `Floatmu{szE,szf}`), or if the
+step is a value smaller than the largest distance between two consecutive
+floats in `[last, stop]` (use [`eligible_step`](@ref) to know the smallest
+value allowed).
+
+When the step is an amount to add, the bounds cannot be infinities. 
+
+When the step is a number of floats, infinities are allowed for the bounds and are always
+part of the resulting range:
+```jldoctest
+julia> collect(FloatmuIterator(Floatmu{2,2},-Inf,Inf,5))
+6-element Vector{Floatmu{2, 2}}:
+ -Infμ{2, 2}
+  -1.75
+  -0.5
+   0.75
+   2.0
+  Infμ{2, 2}
+```
 
 # Examples
 ```jldoctest
@@ -1174,73 +1242,68 @@ julia> L2=[x for x = FloatmuIterator(Floatmu{2, 2}, 0.0, 1.0, 2)]
  1.0
 ```
 """
-struct FloatmuIterator{szE,szf}
+mutable struct FloatmuIterator{szE,szf}
     first::Floatmu{szE,szf}
     last::Floatmu{szE,szf}
     step::Union{Int,Floatmu{szE,szf}}
+    stopit::Bool
 
     function FloatmuIterator(start::Floatmu{szE,szf},stop::Floatmu{szE,szf},
                              step::Floatmu{szE,szf}) where {szE,szf}
-        if isnan(start) || isnan(stop)
-            throw(ArgumentError("bounds of the iteration cannot be NaNs"))
-        end
-        if step == 0.0
-            throw(ArgumentError("the step shall be non-null"))
-        end
-        return new{szE,szf}(start,stop,step)
+        check_eligibility_step(start,stop,step);
+
+        return new{szE,szf}(start,stop,step,false)
     end
+    
     function FloatmuIterator(start::Floatmu{szE,szf},stop::Floatmu{szE,szf},
                              step::Float64) where {szE,szf}
-        if isnan(start) || isnan(stop)
-            throw(ArgumentError("bounds of the iteration cannot be NaNs"))
-        end
-        if step == 0.0
-            throw(ArgumentError("the step shall be non-null"))
-        end
-        return new{szE,szf}(start,stop,Floatmu{szE,szf}(step))
-    end
-    function FloatmuIterator(start::Floatmu{szE,szf},stop::Floatmu{szE,szf},
-                             step::Int = 1) where {szE,szf}
-        if isnan(start) || isnan(stop)
-            throw(ArgumentError("bounds of the iteration cannot be NaNs"))
-        end
-        if step == 0
-            throw(ArgumentError("the step shall be non-null"))
-        end
-        return new{szE,szf}(start,stop,step)
-    end
-    function FloatmuIterator(::Type{Floatmu{szE,szf}},start::Float64,stop::Float64,
-                             step::Int = 1) where {szE,szf}
-        if isnan(start) || isnan(stop)
-            throw(ArgumentError("bounds of the iteration cannot be NaNs"))
-        end
-        if step == 0
-            throw(ArgumentError("the step shall be non-null"))
-        end
-        return new{szE,szf}(Floatmu{szE,szf}(float64_to_uint32mu(start, szE, szf),nothing),
-                            Floatmu{szE,szf}(float64_to_uint32mu(stop, szE, szf),nothing),step)
-    end
-    function FloatmuIterator(::Type{Floatmu{szE,szf}},start::Float64,stop::Float64,
-                             step::Float64) where {szE,szf}
-        if isnan(start) || isnan(stop)
-            throw(ArgumentError("bounds of the iteration cannot be NaNs"))
-        end
         mustep = Floatmu{szE,szf}(step)
-        if mustep == 0.0
+        check_eligibility_step(start,stop,mustep)
+        return new{szE,szf}(start,stop,mustep,false)
+    end
+    
+    function FloatmuIterator(::Type{Floatmu{szE,szf}},start::Float64,stop::Float64,
+                             step::Float64) where {szE,szf}
+        mustart = Floatmu{szE,szf}(float64_to_uint32mu(start, szE, szf),nothing)
+        mustop = Floatmu{szE,szf}(float64_to_uint32mu(stop, szE, szf),nothing)
+        mustep = Floatmu{szE,szf}(step)
+        check_eligibility_step(mustart,mustop,mustep)
+        return new{szE,szf}(mustart, mustop, mustep, false)
+    end
+
+    function FloatmuIterator(start::Floatmu{szE,szf},stop::Floatmu{szE,szf},
+                             step::Int = 1) where {szE,szf}
+        if isnan(start) || isnan(stop)
+            throw(ArgumentError("bounds of the iteration cannot be NaNs"))
+        end
+        if step == 0
+            throw(ArgumentError("the step shall be non-null"))
+        end
+        return new{szE,szf}(start,stop,step,false)
+    end
+    
+    function FloatmuIterator(::Type{Floatmu{szE,szf}},start::Float64,stop::Float64,
+                             step::Int = 1) where {szE,szf}
+        if isnan(start) || isnan(stop)
+            throw(ArgumentError("bounds of the iteration cannot be NaNs"))
+        end
+        if step == 0
             throw(ArgumentError("the step shall be non-null"))
         end
         return new{szE,szf}(Floatmu{szE,szf}(float64_to_uint32mu(start, szE, szf),nothing),
-                            Floatmu{szE,szf}(float64_to_uint32mu(stop, szE, szf),nothing),mustep)
+                            Floatmu{szE,szf}(float64_to_uint32mu(stop, szE, szf),nothing),step,false)
     end
 end
 
 function iterate(iter::FloatmuIterator{szE,szf},state=iter.first) where {szE,szf}
-    if state <= iter.last
+    if state <= iter.last && !iter.stopit
         if iter.step isa Int
-            return (state,nextfloat(state,iter.step))
+            nextstate = nextfloat(state,iter.step)
         else
-            return (state,state+iter.step)
+            nextstate = state+iter.step
         end
+        iter.stopit = (state == nextstate)
+        return (state,nextstate)
     else
         return nothing
     end
@@ -1248,9 +1311,17 @@ end
 
 function length(iter::FloatmuIterator{szE,szf}) where {szE,szf}
     if iter.step isa Int
-        return ceil(Int,nb_fp_numbers(iter.first,iter.last)/iter.step)
+        nr = (nb_fp_numbers(iter.first,iter.last)-1)/iter.step
+        nt = trunc(nr)
+        if isinf(iter.last)
+            # If the right bound is an infinity, it will be included in the range even
+            # if the number of steps does not match => add 1 value more in the range.
+            return Int(nt) + (nt != nr ? 2 : 1)
+        else
+            return 1 + Int(nt)
+        end
     else
-        return ceil(Int,(Float64(iter.last)-Float64(iter.first))/Float64(iter.step))
+        return 1 + trunc(Int,(Float64(iter.last)-Float64(iter.first))/Float64(iter.step))
     end
 end
 

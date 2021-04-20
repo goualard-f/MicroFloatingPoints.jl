@@ -215,6 +215,14 @@ FloatmuIterator{szE,szf}
     FloatmuIterator{2,2}(-1.25, -0.25, 0.25)
     ```
 	
+It is possible to know in advance the number of floats in the resulting range with the [`length`](https://docs.julialang.org/en/v1/base/collections/#Base.length) function.	
+
+As stated in the documentation for `FloatmuIterator` above, one cannot use a floating-point step smaller than the largest gap in the domain we iterate through. The function `eligible_step` gives the smallest value allowed when given two bounds.
+
+```@docs
+eligible_step
+```
+	
 ### Rounding
 
 We have seen in section [Creating a `Floatmu` float](@ref) that each `Floatmu` retains the information whether the value it was created from required rounding or not.

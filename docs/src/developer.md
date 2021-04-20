@@ -35,6 +35,12 @@ MicroFloatingPoints.roundfrac(f,szf)
 MicroFloatingPoints.float64_to_uint32mu(x::Float64,szE,szf)
 ```
 
+## Iterators
+
+```@docs
+check_eligibility_step(start::Floatmu{szE,szf}, stop::Floatmu{szE,szf}, step::Floatmu{szE,szf}) where {szE,szf}
+```
+
 ## The `MicroFloatingPoints.MFPRandom` module
 
 ```@meta

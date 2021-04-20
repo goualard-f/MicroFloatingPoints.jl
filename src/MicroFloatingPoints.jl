@@ -25,6 +25,7 @@ export μ, λ, NaNμ, Infμ
 export FloatmuIterator
 export isinexact, errorsign, reset_inexact, inexact
 export Emax, Emin, nb_fp_numbers, bias
+export eligible_step
 
 include("Floatmu.jl")
 
