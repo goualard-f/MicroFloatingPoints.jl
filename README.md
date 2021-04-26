@@ -16,7 +16,7 @@ julia> inexact()
 true
 ```
 
-<!-- Disabling this section pending approval in the general registry.
+
 ## Installation
 
 The package can be installed with the Julia package manager. From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
@@ -30,7 +30,9 @@ Or, equivalently, via the Pkg API:
 ```julia
 julia> import Pkg; Pkg.add("MicroFloatingPoints")
 ```
--->
+
+Note that the `matplotlib` Python package must be available through `PyCall`.
+
 
 ## Documentation
 

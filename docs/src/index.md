@@ -4,6 +4,8 @@ The `MicroFloatingPoints` package allows to manipulate small [IEEE 754](https://
 
 The library may serve to exemplify the behavior of IEEE 754 floating-point numbers in a systematic way through the use of very small formats.
 
+## Presentation
+
 At its core, the package defines a new type `Floatmu` parameterized by two integers:
 
 - `szE`, the number of bits used to represent the exponent;
@@ -42,4 +44,21 @@ It is also possible to emulate more established formats such as:
 - AMD's `fp24`: `Floatmu{7,16}`
 - Pixar's PXR24: `Floatmu{8,15}`
 - and many more…
+
+## Installation
+
+The package can be installed with the Julia package manager. From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
+
+```julia
+pkg> add MicroFloatingPoints
+```
+
+Or, equivalently, via the Pkg API:
+
+```julia
+julia> import Pkg; Pkg.add("MicroFloatingPoints")
+```
+
+Note that the `matplotlib` Python package must be available through `PyCall`.
+
 

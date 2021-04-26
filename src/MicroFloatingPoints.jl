@@ -29,10 +29,14 @@ export eligible_step
 
 include("Floatmu.jl")
 
+# Submodule MFPUtils
+include("MFPUtils.jl")
+
 # Submodule MFPPlot
 include("MFPPlot.jl")
 
 # Submodule MFPRandom
 include("MFPRandom.jl")
+
 
 end # module

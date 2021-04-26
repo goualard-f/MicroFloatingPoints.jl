@@ -9,9 +9,10 @@ CurrentModule = MicroFloatingPoints
 # A guided tour
 
 
-The `MicroFloatingPoints` package is organized into three modules:
+The `MicroFloatingPoints` package is organized into four modules:
 
 - `MicroFloatingPoints`: the main module containing the definition of the parameterized type `Floatmu` and the associated methods;
+- `MicroFloatingPoints.MFPUtils`: a module providing miscellaneous utility functions for the `Floatmu` type;
 - `MicroFloatingPoints.MFPPlot`: a module offering various graphical ways to display `Floatmu` floating-point numbers;
 - `MicroFloatingPoints.MFPRandom`: the module overloading [`Random.rand`](https://docs.julialang.org/en/v1/stdlib/Random/#Base.rand) to produce `Floatmu` random values.
 

@@ -3,6 +3,7 @@ DocTestSetup = quote
 	using Distributions, Random
     using MicroFloatingPoints
 	using MicroFloatingPoints.MFPPlot, MicroFloatingPoints.MFPRandom
+	using MicroFloatingPoints.MFPUtils
 end
 CurrentModule = MicroFloatingPoints
 ```
@@ -259,6 +260,18 @@ true
 
 Note that, in the first example, the result of the computation needed rounding, while in the second example, the output is representable but one of the intermediary computation needed rounding. 
 
+## The `MicroFloatingPoints.MFPUtils` module
+
+```@meta
+CurrentModule = MicroFloatingPoints.MFPUtils
+```
+
+The `MicroFloatingPoints.MFPUtils` module offers some utiliy functions to be used either by other modules of the `MicroFloatingPoints` package or directly by the end user.
+
+```@docs
+vertical_popcount(T::Vector{Floatmu{szE,szf}}) where {szE,szf}
+```
+
 
 ## The `MicroFloatingPoints.MFPRandom` module
 
@@ -354,5 +367,26 @@ savefig("realline_Floatmu23b.svg"); nothing # hide
 ```@raw html
 <div style="text-align: center">
 <img src="./realline_Floatmu23b.svg" alt="Floatmu{2,3} finite and infinite values" />
+</div>
+```
+
+```@docs
+bits_histogram(T::Vector{Floatmu{szE,szf}}) where {szE,szf}
+```
+
+```@setup bits-histogram-example
+using MicroFloatingPoints, MicroFloatingPoints.MFPPlot, PyPlot
+plt.figure()
+```
+
+```@repl bits-histogram-example
+T=collect(FloatmuIterator(Floatmu{3,5},0.0,1.0,2.0^-6));
+bits_histogram(T)
+savefig("bits_histogram.svg"); nothing # hide
+```
+
+```@raw html
+<div style="text-align: center">
+<img src="./bits_histogram.svg" alt="Floatmu{3,4} bits histogram in [0, 1]" />
 </div>
 ```

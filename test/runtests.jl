@@ -21,7 +21,10 @@
 using Test
 using TestSetExtensions
 
-using MicroFloatingPoints, MicroFloatingPoints.MFPRandom, MicroFloatingPoints.MFPPlot
+using MicroFloatingPoints
+using MicroFloatingPoints.MFPUtils
+using MicroFloatingPoints.MFPRandom
+using MicroFloatingPoints.MFPPlot
 
 # Call "julia runtests.jl [tests1] [tests2] ..."
 # to launch only the tests in `test1.jl`, `test2.jl`, ...
