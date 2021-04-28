@@ -78,7 +78,7 @@ julia> a == 0.1f0
 true
 ```
 """
-struct Floatmu{szE,szf} <: AbstractFloat
+struct Floatmu{szE, szf} <: AbstractFloat
     # Representation of the Floatmu as a 32 bits unsigned integer.
     # The various fields (s,e,f) are aligned to the right of the integer.
     v::UInt32
@@ -1342,35 +1342,11 @@ function decompose(x::Floatmu{szE,szf}) where {szE,szf}
 end
 
 
-# Macro to generate unary operators on FloatMu numbers
-macro FloatmuOp1Factory(op::Symbol)
-    return quote
-        function $(esc(op))(x::Floatmu{szE,szf}) where {szE,szf}
-            return Floatmu{szE,szf}($op(convert(Float64,x)))
-        end
-    end
+# Unary operators using Float64 versions.
+for op = (:+, :-, :sqrt, :cos, :sin, :tan, :acos, :asin, :atan, :cosh, :sinh, :tanh, :acosh, :asinh, :atanh, :exp, :log, :log2, :log10, :log1p)
+    @eval Base.$op(x::Floatmu{szE,szf}) where {szE,szf} = Floatmu{szE,szf}($op(convert(Float64,x)))
 end
 
-@FloatmuOp1Factory(+)
-@FloatmuOp1Factory(-)
-@FloatmuOp1Factory(sqrt)
-@FloatmuOp1Factory(cos)
-@FloatmuOp1Factory(sin)
-@FloatmuOp1Factory(tan)
-@FloatmuOp1Factory(acos)
-@FloatmuOp1Factory(asin)
-@FloatmuOp1Factory(atan)
-@FloatmuOp1Factory(cosh)
-@FloatmuOp1Factory(sinh)
-@FloatmuOp1Factory(tanh)
-@FloatmuOp1Factory(acosh)
-@FloatmuOp1Factory(asinh)
-@FloatmuOp1Factory(atanh)
-@FloatmuOp1Factory(exp)
-@FloatmuOp1Factory(log)
-@FloatmuOp1Factory(log2)
-@FloatmuOp1Factory(log10)
-@FloatmuOp1Factory(log1p)
 
 #    Macro to generate binary operators on Floatmu{szE,szf} numbers
 macro FloatmuOp2Factory(op::Symbol)
