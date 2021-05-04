@@ -27,3 +27,25 @@ end;
     @test precision(Floatmu{5,10}) == precision(Float16)
     @test precision(Floatmu{8,23}) == precision(Float32)
 end;
+
+@testset "exponent" begin
+    F823 = Floatmu{8,23}
+    @test exponent(F823(134.26)) == exponent(134.26f0)
+    @test exponent(F823(-12345.78)) == exponent(-12345.78f0)
+    @test exponent(nextfloat(F823(0.0))) == exponent(nextfloat(0.0f0))
+    @test_throws DomainError exponent(F823(Inf))
+    @test_throws DomainError exponent(F823(NaN))
+    @test_throws DomainError exponent(F823(0.0))
+    @test_throws DomainError exponent(F823(-0.0))
+end;
+
+@testset "significand" begin
+    F823 = Floatmu{8,23}
+    @test significand(F823(134.26)) == significand(134.26f0)
+    @test significand(F823(-12345.78)) == significand(-12345.78f0)
+    @test significand(nextfloat(F823(0.0))) == significand(nextfloat(0.0f0))
+    @test significand(F823(Inf)) == significand(Inf32)
+    @test isnan(significand(F823(NaN)))
+    @test significand(F823(0.0)) == significand(0.0f0)
+    @test significand(F823(-0.0)) == significand(-0.0f0)
+end;

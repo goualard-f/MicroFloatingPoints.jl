@@ -31,6 +31,7 @@ import Base.round, Base.trunc
 import Base.parse, Base.tryparse
 import Base.prevfloat, Base.nextfloat
 import Base.promote_rule
+import Base.Math.significand, Base.Math.exponent
 import Base: +, -, *, /
 import Base: ==, !=, <, <=, >, >=
 import Base: cos, sin, tan, exp, log, sqrt, log2
@@ -465,6 +466,48 @@ function issubnormal(x::Floatmu{szE,szf}) where {szE,szf}
 end
 
 
+exponent_one(::Type{Floatmu{szE,szf}}) where {szE,szf} = UInt32(exponent_mask(Floatmu{szE,szf}) & (1<<(szE+szf-1)-1))
+
+
+"""
+    significand(x::Floatmu{szE,szf}) where {szE,szf}
+
+    
+
+See [`Base.Math.significand`](https://docs.julialang.org/en/v1/base/numbers/#Base.Math.significand)
+"""
+function significand(x::Floatmu{szE,szf}) where {szE,szf}
+    xu = x.v
+    xs = xu & ~sign_mask(Floatmu{szE,szf})
+    xs >= exponent_mask(Floatmu{szE,szf}) && return x # NaN or Inf
+    if xs <= (~exponent_mask(Floatmu{szE,szf}) & ~sign_mask(Floatmu{szE,szf})) # x is subnormal
+        xs == 0 && return x # +-0
+        m = UInt32(leading_zeros(xs) - szE)
+        xs <<= m
+        xu = xs | (xu & sign_mask(Floatmu{szE,szf}))
+    end
+    xu = (xu & ~exponent_mask(Floatmu{szE,szf})) | exponent_one(Floatmu{szE,szf})
+    return Floatmu{szE,szf}(xu,nothing)
+end
+
+"""
+    exponent(x::Floatmu{szE,szf}) where {szE,szf}
+
+
+
+See [`Base.Math.significand`](https://docs.julialang.org/en/v1/base/numbers/#Base.Math.exponent)
+"""
+function exponent(x::Floatmu{szE,szf}) where {szE,szf}
+    xs = x.v & ~sign_mask(Floatmu{szE,szf})
+    xs >= exponent_mask(Floatmu{szE,szf}) && throw(DomainError(x, "Cannot be NaN or Inf."))
+    k = Int(xs >> szf)
+    if k == 0 # x is subnormal
+        xs == 0 && throw(DomainError(x, "Cannot be subnormal converted to 0."))
+        m = leading_zeros(xs) - szE
+        k = 1 - m
+    end
+    return k - Int(bias(Floatmu{szE,szf}))
+end
 
 
 """
