@@ -10,7 +10,7 @@ makedocs(
     sitename="The MicroFloatingPoints Documentation",
     authors = "Frédéric Goualard",
     modules = [MicroFloatingPoints, MicroFloatingPoints.MFPRandom, MicroFloatingPoints.MFPPlot, MicroFloatingPoints.MFPUtils],
-    format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
+    format = Documenter.HTML(prettyurls = false), # get(ENV, "CI", nothing) == "true"),
     pages = ["Home" => "index.md"
              "A Guided Tour" => "guided-tour.md"
              "Manual" => "manual.md"

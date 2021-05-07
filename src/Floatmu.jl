@@ -469,13 +469,7 @@ end
 exponent_one(::Type{Floatmu{szE,szf}}) where {szE,szf} = UInt32(exponent_mask(Floatmu{szE,szf}) & (1<<(szE+szf-1)-1))
 
 
-"""
-    significand(x::Floatmu{szE,szf}) where {szE,szf}
-
-    
-
-See [`Base.Math.significand`](https://docs.julialang.org/en/v1/base/numbers/#Base.Math.significand)
-"""
+# See [`Base.Math.significand`](https://docs.julialang.org/en/v1/base/numbers/#Base.Math.significand)
 function significand(x::Floatmu{szE,szf}) where {szE,szf}
     xu = x.v
     xs = xu & ~sign_mask(Floatmu{szE,szf})
@@ -490,13 +484,7 @@ function significand(x::Floatmu{szE,szf}) where {szE,szf}
     return Floatmu{szE,szf}(xu,nothing)
 end
 
-"""
-    exponent(x::Floatmu{szE,szf}) where {szE,szf}
-
-
-
-See [`Base.Math.significand`](https://docs.julialang.org/en/v1/base/numbers/#Base.Math.exponent)
-"""
+# See [`Base.Math.significand`](https://docs.julialang.org/en/v1/base/numbers/#Base.Math.exponent)
 function exponent(x::Floatmu{szE,szf}) where {szE,szf}
     xs = x.v & ~sign_mask(Floatmu{szE,szf})
     xs >= exponent_mask(Floatmu{szE,szf}) && throw(DomainError(x, "Cannot be NaN or Inf."))
