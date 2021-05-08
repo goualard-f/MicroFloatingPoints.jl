@@ -32,7 +32,7 @@ import Base.parse, Base.tryparse
 import Base.prevfloat, Base.nextfloat
 import Base.promote_rule
 import Base.Math.significand, Base.Math.exponent
-import Base: +, -, *, /
+import Base: +, -, *, /, ^
 import Base: ==, !=, <, <=, >, >=
 import Base: cos, sin, tan, exp, log, sqrt, log2
 import Base.iterate, Base.length, Base.eltype
@@ -1393,6 +1393,10 @@ macro FloatmuOp2Factory(op::Symbol)
             return Floatmu{szE,szf}($op(x,convert(Float64,y)))
         end
     end
+end
+
+function ^(x::Floatmu{szE,szf}, p::Int) where {szE,szf}
+    return Floatmu{szE,szf}(Float64(x)^p)
 end
 
 @FloatmuOp2Factory(+)
