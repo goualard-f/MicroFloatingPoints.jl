@@ -788,12 +788,20 @@ function convert(::Type{Float64}, x::Floatmu{szE,szf}) where {szE, szf}
     end
 end
 
+function convert(::Type{Float16}, x::Floatmu{szE,szf}) where {szE, szf}
+    return Float16(convert(Float64,x))
+end
+
 function convert(::Type{Float32}, x::Floatmu{szE,szf}) where {szE, szf}
     return Float32(convert(Float64,x))
 end
 
-function convert(::Type{Float16}, x::Floatmu{szE,szf}) where {szE, szf}
-    return Float16(convert(Float64,x))
+function convert(::Type{BigFloat}, x::Floatmu{szE,szf}) where {szE, szf}
+    return BigFloat(convert(Float64,x))
+end
+
+function convert(::Type{Floatmu{szE,szf}}, x::BigFloat)  where {szE,szf}
+    return Floatmu{szE,szf}(float64_to_uint32mu(Float64(x),szE,szf),nothing)
 end
 
 function convert(::Type{Floatmu{szE,szf}}, x::Float64)  where {szE,szf}
@@ -812,6 +820,7 @@ end
 Float16(x::Floatmu{szE,szf}) where {szE,szf} = convert(Float16,x)
 Float32(x::Floatmu{szE,szf}) where {szE,szf} = convert(Float32,x)
 Float64(x::Floatmu{szE,szf}) where {szE,szf} = convert(Float64,x)
+BigFloat(x::Floatmu{szE,szf}) where {szE,szf} = convert(BigFloat,x)
 
 function round(x::Floatmu{szE,szf},r::RoundingMode) where {szE,szf}
     return Floatmu{szE,szf}(round(Float64(x),r))
