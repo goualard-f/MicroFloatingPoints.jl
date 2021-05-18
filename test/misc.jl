@@ -49,3 +49,9 @@ end;
     @test significand(F823(0.0)) == significand(0.0f0)
     @test significand(F823(-0.0)) == significand(-0.0f0)
 end;
+
+@testset "fractional_even" begin
+    F823 = Floatmu{8,23}
+    @test fractional_even(F823(1.0))
+    @test !fractional_even(nextfloat(F823(1.0)))
+end;
