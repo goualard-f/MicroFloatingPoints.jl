@@ -31,14 +31,14 @@ import Base.round, Base.trunc
 import Base.parse, Base.tryparse
 import Base.prevfloat, Base.nextfloat
 import Base.promote_rule
-import Base.Math.significand, Base.Math.exponent
+import Base.Math.significand, Base.Math.significand_mask, Base.Math.exponent
 import Base: +, -, *, /, ^
 import Base: ==, !=, <, <=, >, >=
 import Base: cos, sin, tan, exp, log, sqrt, log2
 import Base.iterate, Base.length, Base.eltype
 import Base.prevfloat, Base.nextfloat
 import Base.decompose
-
+import Base.reinterpret
 
 """
     inexact_flag
@@ -149,6 +149,28 @@ struct Floatmu{szE, szf} <: AbstractFloat
         return new{szE,szf}(val,rnd)
     end
 end
+
+function reinterpret(::Type{Unsigned},x::Floatmu{szE,szf}) where {szE,szf}
+    return x.v
+end 
+function reinterpret(::Type{UInt32},x::Floatmu{szE,szf}) where {szE,szf}
+    return x.v
+end 
+function reinterpret(::Type{UInt64},x::Floatmu{szE,szf}) where {szE,szf}
+    return UInt64(x.v)
+end 
+function reinterpret(::Type{Int32},x::Floatmu{szE,szf}) where {szE,szf}
+    return Int32(x.v)
+end 
+function reinterpret(::Type{Int64},x::Floatmu{szE,szf}) where {szE,szf}
+    return Int64(x.v)
+end 
+function reinterpret(::Type{Floatmu{szE,szf}}, x::UInt32) where {szE,szf}
+    return Floatmu{szE,szf}(x,nothing)
+end 
+function reinterpret(::Type{Floatmu{szE,szf}}, x::UInt64) where {szE,szf}
+    return Floatmu{szE,szf}(UInt32(x),nothing)
+end 
 
 
 promote_rule(::Type{T},::Type{Floatmu{szE, szf}}) where {T<:Integer,szE,szf} = Float64

@@ -92,3 +92,14 @@ end;
 @testset "convert 16 to μ" begin
     @test convert(Floatmu{5,10},Float16(0.1)) == Float16(0.1)
 end;
+
+@testset "reinterpret" begin
+    x = Floatmu{4,4}(-3.5)
+    @test reinterpret(Unsigned,x) == 0x0000018c
+    @test reinterpret(UInt32,x) == 0x0000018c
+    @test reinterpret(UInt64,x) == 0x000000000000018c
+    @test reinterpret(Int32,x) == 396
+    @test reinterpret(Int64,x) == 396
+    @test reinterpret(Floatmu{4,4},0x0000018c) == x
+    @test reinterpret(Floatmu{4,4},0x000000000000018c) == x
+end
