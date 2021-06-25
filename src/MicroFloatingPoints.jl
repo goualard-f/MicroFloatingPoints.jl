@@ -26,6 +26,7 @@ export FloatmuIterator
 export isinexact, errorsign, reset_inexact, inexact
 export Emax, Emin, nb_fp_numbers, bias
 export eligible_step
+export fractional_even
 
 include("Floatmu.jl")
 

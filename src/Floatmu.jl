@@ -208,6 +208,19 @@ Emax(::Type{Floatmu{szE,szf}}) where {szE, szf} = UInt32(2^(UInt32(szE)-1)-1)
 exponent_max(::Type{Floatmu{szE,szf}}) where {szE, szf} = Int64(Emax(Floatmu{szE,szf}))
 exponent_raw_max(::Type{Floatmu{szE,szf}}) where {szE, szf} = Int64(exponent_mask(Floatmu{szE,szf}) >> szf)
 
+
+"""
+    fractional_even(x::Floatmu{szE,szf}) where {szE,szf}
+
+Return `true` if the fractional part of `x` has a zero as the rightmost bit.
+
+BEWARE: the function does not check whether `x` is an NaN or an infinite value.
+"""
+function fractional_even(x::Floatmu{szE,szf}) where {szE,szf}
+    return (x.v & 1) == 0
+end
+
+
 """
     Emin(::Type{Floatmu{szE,szf}}) where {szE, szf}
 

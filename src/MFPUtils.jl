@@ -22,7 +22,7 @@ module MFPUtils
 
 import ..MicroFloatingPoints: Floatmu
 
-export vertical_popcount, fractional_even
+export vertical_popcount
 
 """
     vertical_popcount(T::Vector{Floatmu{szE,szf}}) where {szE,szf}
@@ -57,17 +57,6 @@ function vertical_popcount(T::Vector{Floatmu{szE,szf}}) where {szE,szf}
         end
     end
     return count
-end
-
-"""
-    fractional_even(x::Floatmu{szE,szf}) where {szE,szf}
-
-Return `true` if the fractional part of `x` has a zero as the rightmost bit.
-
-BEWARE: the function does not check whether `x` is an NaN or an infinite value.
-"""
-function fractional_even(x::Floatmu{szE,szf}) where {szE,szf}
-    return (x.v & 1) == 0
 end
 
 end # Module

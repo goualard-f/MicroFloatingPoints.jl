@@ -142,6 +142,12 @@ maxintfloat(::Type{Floatmu{szE,szf}})  where {szE,szf}
 
 ```
 
+Lastly, some methods test properties on the different parts of a `Floatmu`:
+
+```@docs
+fractional_even(x::Floatmu{szE,szf}) where {szE,szf}
+```
+
 ### Tests 
 
 ```@docs
