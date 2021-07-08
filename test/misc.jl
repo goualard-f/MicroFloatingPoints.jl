@@ -48,6 +48,7 @@ end;
     @test isnan(significand(F823(NaN)))
     @test significand(F823(0.0)) == significand(0.0f0)
     @test significand(F823(-0.0)) == significand(-0.0f0)
+    @test significand(Floatmu{4,4}(1.5)) == 1.5
 end;
 
 @testset "fractional_even" begin

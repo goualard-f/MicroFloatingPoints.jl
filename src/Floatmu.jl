@@ -509,7 +509,7 @@ function significand(x::Floatmu{szE,szf}) where {szE,szf}
     xu = x.v
     xs = xu & ~sign_mask(Floatmu{szE,szf})
     xs >= exponent_mask(Floatmu{szE,szf}) && return x # NaN or Inf
-    if xs <= (~exponent_mask(Floatmu{szE,szf}) & ~sign_mask(Floatmu{szE,szf})) # x is subnormal
+    if issubnormal(x) || iszero(x)
         xs == 0 && return x # +-0
         m = UInt32(leading_zeros(xs) - szE)
         xs <<= m
