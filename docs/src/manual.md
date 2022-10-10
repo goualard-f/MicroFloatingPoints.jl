@@ -130,6 +130,7 @@ Other methods return remarkable values for the type:
 ```@docs
 Infμ(::Type{Floatmu{szE,szf}}) where {szE,szf}
 NaNμ(::Type{Floatmu{szE,szf}}) where {szE, szf}
+ldexp(x::Floatmu{szE,szf}, n::Integer) where {szE, szf}
 eps(::Type{Floatmu{szE,szf}})  where {szE,szf}
 λ(::Type{Floatmu{szE,szf}})  where {szE,szf}
 μ(::Type{Floatmu{szE,szf}})  where {szE,szf}

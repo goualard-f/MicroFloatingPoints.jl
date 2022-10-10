@@ -41,6 +41,8 @@ import Base.decompose
 import Base.reinterpret
 
 export reinterpret
+export fractional_even
+
 """
     inexact_flag
 
@@ -284,11 +286,11 @@ NaNμ{2, 2}
 NaNμ(::Type{Floatmu{szE,szf}}) where {szE, szf} = Floatmu{szE,szf}(exponent_mask(Floatmu{szE,szf}) | (UInt32(1) << (UInt32(szf)-1)),nothing)
 
 """
-    ldexp(x::Floatmu{szE,szf}, n::Integer)
+    ldexp(x::Floatmu{szE,szf}, n::Integer) where {szE, szf}
 
-    Return `x \times 2^n`
+Return ``x \\times 2^n``.
 
-    !!! info 
+!!! Info
     This is a quick-and-dirty implementation.
 """
 function ldexp(x::Floatmu{szE,szf}, n::Integer) where {szE, szf}
