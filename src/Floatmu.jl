@@ -1,6 +1,6 @@
 # Floatmu --
 #
-#	Copyright 2019--2021 University of Nantes, France.
+#	Copyright 2019--2022 University of Nantes, France.
 #
 #	This file is part of the MicroFloatingPoints library.
 #
@@ -23,7 +23,7 @@
 import Printf.@printf
 import Base.convert, Base.show, Base.Float16, Base.Float32, Base.Float64
 import Base.sign, Base.signbit, Base.bitstring
-import Base.typemin, Base.typemax, Base.maxintfloat, Base.eps
+import Base.typemin, Base.typemax, Base.maxintfloat, Base.ldexp, Base.eps
 import Base.floatmax, Base.floatmin, Base.precision
 import Base.isinf, Base.isfinite, Base.isnan, Base.issubnormal
 import Base: exponent_max, exponent_raw_max
@@ -40,6 +40,7 @@ import Base.prevfloat, Base.nextfloat
 import Base.decompose
 import Base.reinterpret
 
+export reinterpret
 """
     inexact_flag
 
@@ -281,6 +282,19 @@ NaNμ{2, 2}
 ```
 """
 NaNμ(::Type{Floatmu{szE,szf}}) where {szE, szf} = Floatmu{szE,szf}(exponent_mask(Floatmu{szE,szf}) | (UInt32(1) << (UInt32(szf)-1)),nothing)
+
+"""
+    ldexp(x::Floatmu{szE,szf}, n::Integer)
+
+    Return `x \times 2^n`
+
+    !!! info 
+    This is a quick-and-dirty implementation.
+"""
+function ldexp(x::Floatmu{szE,szf}, n::Integer) where {szE, szf}
+    (isnan(x) || isinf(x)) && return x
+    return x*2.0^n
+end
 
 """
     eps(::Type{Floatmu{szE,szf}})  where {szE,szf}
