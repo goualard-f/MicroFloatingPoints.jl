@@ -290,7 +290,7 @@ NaNμ(::Type{Floatmu{szE,szf}}) where {szE, szf} = Floatmu{szE,szf}(exponent_mas
 
 Return ``x \\times 2^n``.
 
-!!! Info
+!!! info
     This is a quick-and-dirty implementation.
 
 # Examples
