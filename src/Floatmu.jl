@@ -292,6 +292,12 @@ Return ``x \\times 2^n``.
 
 !!! Info
     This is a quick-and-dirty implementation.
+
+# Examples
+```jldoctest
+julia> ldexp(Floatmu{5,3}(2.5),3)
+20.0
+```
 """
 function ldexp(x::Floatmu{szE,szf}, n::Integer) where {szE, szf}
     (isnan(x) || isinf(x)) && return x
