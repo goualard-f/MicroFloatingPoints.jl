@@ -1,6 +1,6 @@
 # Floatmu --
 #
-#	Copyright 2019--2022 University of Nantes, France.
+#	Copyright 2019--2023 University of Nantes, France.
 #
 #	This file is part of the MicroFloatingPoints library.
 #
@@ -42,6 +42,7 @@ import Base.reinterpret
 
 export reinterpret
 export fractional_even
+
 
 """
     inexact_flag
@@ -191,6 +192,7 @@ sign_mask(::Type{Floatmu{szE,szf}}) where {szE, szf} = UInt32(1) << (UInt32(szE)
 
 
 precision(::Type{Floatmu{szE,szf}}) where {szE,szf} = Int64(szf+1)
+precision(x::Floatmu{szE,szf}) where {szE,szf} = Int64(szf+1)
 
 """
     Emax(::Type{Floatmu{szE,szf}}) where {szE, szf}
