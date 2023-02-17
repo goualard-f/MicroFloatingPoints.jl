@@ -1,6 +1,6 @@
 # MFPUtils --
 #
-#	Copyright 2019--2021 University of Nantes, France.
+#	Copyright 2019--2023 University of Nantes, France.
 #
 #	This file is part of the MicroFloatingPoints library.
 #

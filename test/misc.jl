@@ -26,6 +26,7 @@ end;
 @testset "precision" begin
     @test precision(Floatmu{5,10}) == precision(Float16)
     @test precision(Floatmu{8,23}) == precision(Float32)
+    @test precision(Floatmu{8,23}(2.0)) == 24
 end;
 
 @testset "exponent" begin
