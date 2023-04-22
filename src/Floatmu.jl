@@ -34,7 +34,7 @@ import Base.promote_rule
 import Base.Math.significand, Base.Math.significand_mask, Base.Math.exponent
 import Base: +, -, *, /, ^
 import Base: ==, !=, <, <=, >, >=
-import Base: cos, sin, tan, exp, log, sqrt, log2
+import Base: cos, sin, tan, exp, log, sqrt, log2, sincos
 import Base.iterate, Base.length, Base.eltype
 import Base.prevfloat, Base.nextfloat
 import Base.decompose
@@ -90,6 +90,14 @@ struct Floatmu{szE, szf} <: AbstractFloat
     # Is the value an approximation by default (-1), excess (+1) or the exact value (0)
     inexact::Int32
 
+    function Floatmu{szE,szf}(::Irrational{:π}) where {szE,szf}
+        @assert szE isa Integer "Exponent size must be an integer!"
+        @assert szf isa Integer "Fractional part size must be an integer!"
+        @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
+        (val,rnd) = float64_to_uint32mu(Float64(π), szE, szf)
+        global inexact_flag = inexact_flag || true
+        return new{szE,szf}(val,rnd)
+    end
     function Floatmu{szE,szf}(x::Float64) where {szE,szf}
         @assert szE isa Integer "Exponent size must be an integer!"
         @assert szf isa Integer "Fractional part size must be an integer!"
@@ -177,7 +185,7 @@ function reinterpret(::Type{Floatmu{szE,szf}}, x::UInt64) where {szE,szf}
 end 
 
 
-promote_rule(::Type{T},::Type{Floatmu{szE, szf}}) where {T<:Integer,szE,szf} = Float64
+promote_rule(::Type{T},::Type{Floatmu{szE, szf}}) where {T<:Integer,szE,szf} = Floatmu{szE,szf}
 promote_rule(::Type{Float64},::Type{Floatmu{szE, szf}}) where {szE,szf} = Float64
 promote_rule(::Type{Float32},::Type{Floatmu{szE, szf}}) where {szE,szf} = Float32
 promote_rule(::Type{Float16},::Type{Floatmu{szE, szf}}) where {szE,szf} = Floatmu{max(5,szE),max(10,szf)}
@@ -1446,6 +1454,10 @@ for op = (:+, :-, :sqrt, :cos, :sin, :tan, :acos, :asin, :atan, :cosh, :sinh, :t
     @eval Base.$op(x::Floatmu{szE,szf}) where {szE,szf} = Floatmu{szE,szf}($op(convert(Float64,x)))
 end
 
+function sincos(x::Floatmu{szE,szf}) where {szE,szf}
+    s,c = sincos(convert(Float64,x))
+    return Floatmu{szE,szf}(s),Floatmu{szE,szf}(c)
+end
 
 #    Macro to generate binary operators on Floatmu{szE,szf} numbers
 macro FloatmuOp2Factory(op::Symbol)
