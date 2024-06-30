@@ -34,7 +34,7 @@ import Base.promote_rule
 import Base.Math.significand, Base.Math.significand_mask, Base.Math.exponent
 import Base: +, -, *, /, ^
 import Base: ==, !=, <, <=, >, >=
-import Base: cos, sin, tan, exp, log, sqrt, log2, sincos
+import Base: cos, sin, tan, exp, log, sqrt, log2, sincos, sincospi
 import Base.iterate, Base.length, Base.eltype
 import Base.prevfloat, Base.nextfloat
 import Base.decompose
@@ -1456,6 +1456,11 @@ end
 
 function sincos(x::Floatmu{szE,szf}) where {szE,szf}
     s,c = sincos(convert(Float64,x))
+    return Floatmu{szE,szf}(s),Floatmu{szE,szf}(c)
+end
+
+function sincospi(x::Floatmu{szE,szf}) where {szE,szf}
+    s,c = sincospi(convert(Float64,x))
     return Floatmu{szE,szf}(s),Floatmu{szE,szf}(c)
 end
 
