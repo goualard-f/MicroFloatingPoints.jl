@@ -14,6 +14,12 @@
     @test string(Floatmu{8,23}(-3.2)) == string(Float32(-3.2))
 end;
 
+@testset "roundtrip" begin
+    for x in (3.22,-3.22,0.1,-0.1,14.89) 
+        @test parse(Floatmu{6,10},string(Floatmu{6,10}(x))) == Floatmu{6,10}(x)
+    end
+end;
+
 @testset "bitstring" begin
     @test bitstring(Floatmu{2,2}(0.0)) == "00000"
     @test bitstring(Floatmu{2,2}(-0.0)) == "10000"

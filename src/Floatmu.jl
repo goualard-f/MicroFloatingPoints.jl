@@ -20,7 +20,7 @@
 
 
 #import Formatting
-import Printf.@printf
+import Printf.@sprintf
 import Base.convert, Base.show, Base.Float16, Base.Float32, Base.Float64
 import Base.sign, Base.signbit, Base.bitstring
 import Base.typemin, Base.typemax, Base.maxintfloat, Base.ldexp, Base.eps
@@ -326,7 +326,7 @@ julia> eps(Floatmu{2, 2})
 0.25
 
 julia> eps(Floatmu{3, 5})
-0.0312
+0.031
 
 julia> eps(Floatmu{8, 23})==eps(Float32)
 true
@@ -818,13 +818,13 @@ julia> convert(Float32,Floatmu{5, 10}(0.1)) == Float16(0.1)
 true
 
 julia> convert(Floatmu{2, 4},0.1)
-0.125
+0.12
 
 julia> convert(Floatmu{2, 4},0.1f0)
-0.125
+0.12
 
 julia> convert(Floatmu{2, 4},Float16(0.1))
-0.125
+0.12
 
 julia> Floatmu{5, 10}(0.1)==Float16(0.1)
 true
@@ -978,35 +978,37 @@ function tryparse(::Type{Floatmu{szE,szf}}, str::AbstractString) where {szE, szf
 end
 
 
-# Hack to use @printf with a format depending on the `Floatmu` used.
-# Since @printf is a macro, it cannot be called with anything other than a constant
-# for the format string.
-# The number of digits used to display a value is chosen so as to ensure
-# a correct round-trip (``In-and-out conversions'', David Matula,
-# Comm. ACM, 11(1), Jan. 1968) 
-variable_printf(io,x::Floatmu{szE,2}) where {szE} = @printf(io,"%.2g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,3}) where {szE} = @printf(io,"%.3g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,4}) where {szE} = @printf(io,"%.3g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,5}) where {szE} = @printf(io,"%.3g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,6}) where {szE} = @printf(io,"%.4g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,7}) where {szE} = @printf(io,"%.4g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,8}) where {szE} = @printf(io,"%.4g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,9}) where {szE} = @printf(io,"%.5g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,10}) where {szE} = @printf(io,"%.5g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,11}) where {szE} = @printf(io,"%.5g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,12}) where {szE} = @printf(io,"%.5g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,13}) where {szE} = @printf(io,"%.6g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,14}) where {szE} = @printf(io,"%.6g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,15}) where {szE} = @printf(io,"%.6g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,16}) where {szE} = @printf(io,"%.7g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,17}) where {szE} = @printf(io,"%.7g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,18}) where {szE} = @printf(io,"%.7g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,19}) where {szE} = @printf(io,"%.8g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,20}) where {szE} = @printf(io,"%.8g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,21}) where {szE} = @printf(io,"%.8g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,22}) where {szE} = @printf(io,"%.8g",convert(Float64,x))
-variable_printf(io,x::Floatmu{szE,23}) where {szE} = @printf(io,"%.9g",convert(Float64,x))
+# Hack to use @sprintf with a format depending on the `Floatmu` used.
+# Since @sprintf is a macro, it cannot be called with anything other
+# than a constant for the format string.
+sprintf1(v) = @sprintf("%.1g",v)
+sprintf2(v) = @sprintf("%.2g",v)
+sprintf3(v) = @sprintf("%.3g",v)
+sprintf4(v) = @sprintf("%.4g",v)
+sprintf5(v) = @sprintf("%.5g",v)
+sprintf6(v) = @sprintf("%.6g",v)
+sprintf7(v) = @sprintf("%.7g",v)
+sprintf8(v) = @sprintf("%.8g",v)
+sprintf9(v) = @sprintf("%.9g",v)
+function sprintf(sz)
+    return @eval ($(Symbol("sprintf$sz")))
+end
 
+# Computing the shortest decimal string that round-trips.
+function variable_printf(io, x)
+    s = @sprintf("%.9g",x) # Using the largest precision possibly required
+    sz = 9
+    tx = typeof(x)
+    while true
+        s2 = sprintf(sz)(x)
+        if parse(tx,s2) != x || sz == 1
+            print(io,s)
+            return
+        end
+        s = s2
+        sz = sz - 1
+    end
+end
 
 function show(io::IO, x::Floatmu{szE,szf}) where {szE, szf}
     if isnan(x)
@@ -1329,7 +1331,7 @@ part of the resulting range:
 julia> collect(FloatmuIterator(Floatmu{2,2},-Inf,Inf,5))
 6-element Vector{Floatmu{2, 2}}:
  -Infμ{2, 2}
-  -1.75
+  -1.8
   -0.5
    0.75
    2.0
