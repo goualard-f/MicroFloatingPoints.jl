@@ -75,7 +75,7 @@ julia> Floatmu{8,7}(10)
 10.0
 ```
 
-Due to the limited range of the `Floatmu` type, some rounding may still occur:
+Due to the limited precision of the `Floatmu` type, some rounding may still occur:
 ```jldoctest constructor-examples
 julia> Floatmu{8,7}(303)
 304.0
@@ -293,20 +293,28 @@ The `MicroFloatingPoints.MFPRandom` module overloads [`rand`](https://docs.julia
 julia> Random.seed!(42);
 
 julia> rand(Floatmu{2,2})
-
+0.5
 julia> rand(Floatmu{2,2})
+0.25
 ```
 
 It is possible to draw `Floatmu` values at random in the same way as with other floating-point types:
 
 ```repl random
 julia> rand(Floatmu{2,2},5)
+5-element Vector{Floatmu{2, 2}}:
+ 0.25
+ 0.5
+ 0.5
+ 0.0
+ 0.5
 ```
 
 Using the [`Distributions`](https://juliastats.org/Distributions.jl/stable/) package, one can also draw `Floatmu` numbers with other distributions:
 
 ```repl random
 julia> rand(Uniform(Floatmu{2,2}(-1.0),Floatmu{2,2}(1.0)))
+0.25
 ```
 
 !!! warning "Using custom distributions"

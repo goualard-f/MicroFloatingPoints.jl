@@ -1,6 +1,6 @@
 # MicroFloatingPoints
 
-The `MicroFloatingPoints` package allows to manipulate small [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754)-compliant floating-point numbers, aka. [*minifloats*](https://en.wikipedia.org/wiki/Minifloat), which are smaller or equal to the `Float32` format mandated by the standard.
+The `MicroFloatingPoints` package allows to manipulate small [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754)-compliant floating-point numbers, aka. [*minifloats*](https://en.wikipedia.org/wiki/Minifloat), whose formats are smaller or equal to the `Float32` format mandated by the standard.
 
 The library may serve to exemplify the behavior of IEEE 754 floating-point numbers in a systematic way through the use of very small formats.
 
@@ -9,11 +9,11 @@ The library may serve to exemplify the behavior of IEEE 754 floating-point numbe
 At its core, the package defines a new type `Floatmu` parameterized by two integers:
 
 - `szE`, the number of bits used to represent the exponent;
-- `szf`, the number of bits used to represent the fractional part (excluding the so-called *hidden bit*).
+- `szf`, the number of bits used to represent the fractional part (excluding the so-called [*hidden bit*](https://en.wikipedia.org/wiki/Significand#The_hidden_bit_in_floating_point)).
 
 As the figure below shows, the total length of an object of the type `Floatmu{szE,szf}` is ``1+\text{szE}+\text{szf}`` bits[^1].
 
-[^1]: The size of the object representing a `Floatmu` may be much larger however, as it corresponds currently to two 32 bits unsigned integers per `Floatmu`.
+[^1]: The size of the object representing a `Floatmu` may be much larger however, as it corresponds currently to two 32 bit unsigned integers per `Floatmu`.
 
 ```@raw html
 <div style="text-align: center">
@@ -25,7 +25,7 @@ As the figure below shows, the total length of an object of the type `Floatmu{sz
 
 [^Rump2016]: IEEE754 Precision-``k`` base-``\beta`` Arithmetic Inherited by Precision-``m`` Base-``\beta`` Arithmetic for ``k<m``. Siegfried M. Rump, ACM Transactions on Mathematical Software, Vol. 43, N° 3. December 2016.
 
-The limits on the integers `szE` and `szf` are therefore:
+Therefore, the limits on the integers `szE` and `szf` are:
 
 ```math
 \left\{\begin{array}{l}

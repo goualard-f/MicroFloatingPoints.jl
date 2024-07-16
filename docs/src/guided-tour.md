@@ -47,7 +47,7 @@ floatmin(MuFP)
 ```
 ## Graphics with `MicroFloatingPoints.MFPPlot`
 
-To better assess what we can do with such a small type, let us display all finite representable values on the real line. The `Plot` module has just the right method:
+To better assess what we can do with such a small type, let us display all finite representable values on the real line. The `MFPPlot` module has just the right method:
 ```@repl realline
 using MicroFloatingPoints.MFPPlot
 real_line(-floatmax(MuFP),floatmax(MuFP));
@@ -66,6 +66,8 @@ Since the difference between any pair of `MuFP` is always greater or equal to μ
 \forall (a,b)\in\text{MuFP}\colon |b-a| = 0 \iff a=b
 ```
 
+You may also notice in the figure that the predecessor of `MuFP(2.0)`, which is `1.75`, is displayed as `"1.8"`. This is due to the fact that, following IEEE 754 requirements, the decimal string used to represent a `Floatmu` is the shortest that ensures a *correct round-trip* to the same `Floatmu`. For our very small format `Floatmu{2,2}`, "1.8" and "1.75" are represented by the same value; consequently, "1.8" is chosen over "1.75".
+
 ### Exhaustive search for rounded additions
 
 The type `MuFP` is so small that we can easily perform exhaustive searches with it. For example, we can display graphically whether the sum of any two finite `MuFP` floats needs to be rounded or not, using the [`inexact()`](@ref) and [`reset_inexact()`](@ref) methods
@@ -73,11 +75,11 @@ to, respectively, test whether the preceding computation needed rounding and to 
 
 ```@setup exhaustive-rounding
 using MicroFloatingPoints
-using PyPlot
 MuFP = Floatmu{2,2}
 ```
 
 ```@example exhaustive-rounding
+using PyPlot
 plt.figure()
 plt.title("Exhaustive search for rounded sums in Floatmu{2,2}")
 TotalIterator = FloatmuIterator(-floatmax(MuFP),floatmax(MuFP))
@@ -88,15 +90,18 @@ let i = 1
         j = 1
         for v2 in TotalIterator
             reset_inexact()
-            v1+v2
-            Z[i,j] = Int(inexact())
+            v=v1+v2
+            Z[i,j] = 0
+            if inexact() 
+                Z[i,j] = isfinite(v) ? 1 : 2
+            end
             j += 1
         end
         i += 1
     end
 end
 V = collect(TotalIterator)
-imshow(Z,origin="lower", cmap="summer")
+imshow(Z,origin="lower", cmap="Oranges")
 plt.yticks(0:(length(V)-1),[string(V[i]) for i in 1:length(V)])
 plt.xticks(0:(length(V)-1),[string(V[i]) for i in 1:length(V)],rotation=90);
 savefig("exhaustive-rounding.svg"); nothing #hide
@@ -104,7 +109,7 @@ savefig("exhaustive-rounding.svg"); nothing #hide
 
 Note the use of a [`FloatmuIterator`](@ref) to enumerate all floating-point numbers in a range.
 
-We obtain the following matrix, where a green cell means that the sum of the values in row and column needs no rounding, while a yellow cell means that the result needs rounding to be represented by a `Floatmu{2,2}`.
+We obtain the following matrix, where a salmon cell means that the sum of the values in row and column needs no rounding, an orange cell means that the result needs rounding to be represented by a `Floatmu{2,2}`, and dark red cells represent overflowed additions.
 
 ```@raw html
 <div style="text-align: center">
