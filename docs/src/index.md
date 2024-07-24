@@ -2,7 +2,7 @@
 
 The `MicroFloatingPoints` package allows to manipulate small [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754)-compliant floating-point numbers, aka. [*minifloats*](https://en.wikipedia.org/wiki/Minifloat), whose formats are smaller or equal to the `Float32` format mandated by the standard.
 
-The library may serve to exemplify the behavior of IEEE 754 floating-point numbers in a systematic way through the use of very small formats.
+The library may serve to investigate and exemplify the behavior of IEEE 754 floating-point numbers in a systematic way through the use of very small formats.
 
 ## Presentation
 
@@ -61,4 +61,27 @@ julia> import Pkg; Pkg.add("MicroFloatingPoints")
 
 Note that the `matplotlib` Python package must be available through `PyCall`.
 
+
+## Tests
+
+Once installed, you may launch all the unit tests of the MicroFloatingPoints package by typing `]` in the REPL to enter the `Pkg` mode and launching:
+
+```julia
+pkg> test MicroFloatingPoints
+```
+
+If all goes well, you should get the message:
+
+```julia
+Test Summary: |  Pass  Total  Time
+All the tests | 63821  63821  5.3s
+     Testing MicroFloatingPoints tests passed 
+
+```
+
+## Contributing and reporting issues
+
+Contributions to the code or the documentation are welcome and should be proposed as *pull requests* on the [github page for the package](https://github.com/goualard-f/MicroFloatingPoints.jl/pulls). 
+
+Errors and questions should be reported as issues on the [github page](https://github.com/goualard-f/MicroFloatingPoints.jl/issues) as well.
 
