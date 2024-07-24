@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="121.45239mm"
-   height="22.304632mm"
-   viewBox="0 0 121.45239 22.304632"
+   width="129.22255mm"
+   height="29.13011mm"
+   viewBox="0 0 129.22255 29.13011"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.3 (2405546, 2018-03-11)"
@@ -28,16 +28,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="63.597348"
-     inkscape:cy="-61.131951"
+     inkscape:zoom="1.979899"
+     inkscape:cx="242.2131"
+     inkscape:cy="77.023644"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1600"
-     inkscape:window-height="877"
-     inkscape:window-x="1080"
-     inkscape:window-y="1020"
+     inkscape:window-width="1920"
+     inkscape:window-height="1051"
+     inkscape:window-x="0"
+     inkscape:window-y="1200"
      inkscape:window-maximized="1"
      fit-margin-top="0"
      fit-margin-left="0"
@@ -59,7 +59,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-32.633926,-120.43879)">
+     transform="translate(-29.427828,-117.75486)">
     <rect
        style="opacity:1;vector-effect:none;fill:#ff0002;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4747"
@@ -266,5 +266,19 @@
          x="130.9509"
          y="141.18187"
          style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;font-family:'Libertinus Sans';-inkscape-font-specification:'Libertinus Sans Italic';stroke-width:0.26458332px">Fractional part</tspan></text>
+    <rect
+       style="opacity:0.99599998;fill:none;fill-rule:evenodd;stroke:none;stroke-width:0.26499999"
+       id="rect4778"
+       width="124.41396"
+       height="24.722431"
+       x="31.698483"
+       y="119.75824" />
+    <rect
+       style="opacity:0.99599998;fill:none;fill-rule:evenodd;stroke:#fffff8;stroke-width:0.46261525;stroke-opacity:1"
+       id="rect4781"
+       width="128.75993"
+       height="28.667494"
+       x="29.659136"
+       y="117.98617" />
   </g>
 </svg>
