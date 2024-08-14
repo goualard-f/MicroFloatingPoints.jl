@@ -235,7 +235,7 @@ eligible_step
 
 We have seen in section [Creating a `Floatmu` float](@ref) that each `Floatmu` retains the information whether the value it was created from required rounding or not.
 
-In addition to that mechanism, the `MicroFloatingPoints` module keeps a global variable that is set to `true` every time a `Floatmu` is created and rounding takes place. That variable is *sticky* (once true, it stays true until reset explictly to `false`). It can be checked with the `inexact()` method and reset with the `reset_inexact()` method.
+In addition to that mechanism, the `MicroFloatingPoints` module keeps a global state that is set to `true` every time a `Floatmu` is created and rounding takes place. It has a *sticky* behavior (once true, it stays true until reset explictly to `false`). It can be checked with the `inexact()` method and reset with the `reset_inexact()` method.
 
 ```@docs
 inexact()

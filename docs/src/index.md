@@ -4,6 +4,8 @@ The `MicroFloatingPoints` package allows to manipulate small [IEEE 754](https://
 
 The library may serve to investigate and exemplify the behavior of IEEE 754 floating-point numbers in a systematic way through the use of very small formats.
 
+There are already several Julia packages to manipulate *minifloats*, [`BFloat.jl`](https://github.com/tkgunaratne/BFloat.jl) and [`BFloat16s.jl`](https://github.com/JuliaMath/BFloat16s.jl), for example. These packages consider only one format ([Google's Brain Float16](https://cloud.google.com/tpu/docs/bfloat16), here) and are tailored for maximum performances, usually for machine learning applications. The `MicroFloatingPoints` package is different in that it trades performances for versatility: with it, you may easily define many different floating-point formats with varying precision and range to  test the impact of both parameters on your algorithms.
+
 ## Presentation
 
 At its core, the package defines a new type `Floatmu` parameterized by two integers:

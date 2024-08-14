@@ -80,7 +80,9 @@ You may also notice in the figure that the predecessor of `MuFP(2.0)`, which is 
 ### Exhaustive search for rounded additions
 
 The type `MuFP` is so small that we can easily perform exhaustive searches with it. For example, we can display graphically whether the sum of any two finite `MuFP` floats needs to be rounded or not, using the [`inexact()`](@ref) and [`reset_inexact()`](@ref) methods
-to, respectively, test whether the preceding computation needed rounding and to reset the global *inexact flag:*
+to, respectively, test whether the preceding computation needed rounding and to reset the global *inexact flag[^1]:*
+
+[^1]: Though there is an *inexact flag*, there is no global variable storing the corresponding state.
 
 ```@setup exhaustive-rounding
 using MicroFloatingPoints
