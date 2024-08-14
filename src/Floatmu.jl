@@ -47,8 +47,7 @@ export fractional_even
 """
     inexact_flag
 
-Flag set to `true` if the latest computation led to some rounding. This is a sticky flag, which must be
-explictly reset.
+Flag set to `true` if the latest computation led to some rounding. This is a sticky flag, which must be explictly reset.
 
 See [`reset_inexact()`](@ref)
 """

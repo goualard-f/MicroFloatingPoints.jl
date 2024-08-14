@@ -18,9 +18,6 @@ The `MicroFloatingPoints` package is organized into four modules:
 
 After having correctly installed the package (see [Installation](@ref)), we start our tour by loading the `MicroFloatingPoints` module:
 
-```@setup realline
-using PyPlot
-```
 
 ```@repl realline
 using MicroFloatingPoints
@@ -47,9 +44,21 @@ floatmin(MuFP)
 ```
 ## Graphics with `MicroFloatingPoints.MFPPlot`
 
-To better assess what we can do with such a small type, let us display all finite representable values on the real line. The `MFPPlot` module has just the right method:
+The `MicroFloatingPoints` package offers several graphical functionnalities that are all available in `MicroFloatingPoints.MFPPlot`:
+
 ```@repl realline
 using MicroFloatingPoints.MFPPlot
+```
+
+Should you require additional graphical elements, you need to load explicitly the `PyPlot` package too:
+
+
+```@repl realline
+using PyPlot
+```
+
+To better assess what we can do with such a small type, let us display all finite representable values on the real line. The `MFPPlot` module has just the right method:
+```@repl realline
 real_line(-floatmax(MuFP),floatmax(MuFP));
 savefig("mufp_realline.svg"); nothing # hide
 ```
@@ -101,7 +110,7 @@ let i = 1
     end
 end
 V = collect(TotalIterator)
-imshow(Z,origin="lower", cmap="Oranges")
+plt.imshow(Z,origin="lower", cmap="Oranges")
 plt.yticks(0:(length(V)-1),[string(V[i]) for i in 1:length(V)])
 plt.xticks(0:(length(V)-1),[string(V[i]) for i in 1:length(V)],rotation=90);
 savefig("exhaustive-rounding.svg"); nothing #hide
@@ -159,14 +168,12 @@ savefig("randfreq-bfloat16.svg"); nothing # hide
 
 The `BFloat16` and `Float16` formats both represent floating-point numbers with 16 bits. The `BFloat16` trades precision for a larger range. Let us compare the results obtained when summing the values of a vector with both types:
 
-```@setup mixed-precision
+```@example mixed-precision
 using MicroFloatingPoints
 using Random
 using Distributions
 Random.seed!(42)
-```
 
-```@example mixed-precision
 BFloat16 = Floatmu{8,7}
 MuFloat16 = Floatmu{5,10} 
 T64 = [rand() for i in 1:1000]
