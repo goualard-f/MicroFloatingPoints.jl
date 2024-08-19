@@ -12,7 +12,7 @@ authors:
 affiliations:
  - name: Nantes Université, École Centrale Nantes, CNRS, LS2N, UMR 6004, Nantes, France
    index: 1
-date: 14 August 2024
+date: 19 August 2024
 bibliography: paper.bib
 ---
 
@@ -26,7 +26,7 @@ Proving the properties of numerical algorithms involving floating-point numbers 
 
 ![Probability of being 1 for each bit of the fractional part of a `Floatmu{7,16}` when dividing each integer in $[0,2^{17}-1]$ by $2^{17}$.\label{fig:random}](random.7.16.svg){width="10cm"}
 
-Small floating-point formats are also increasingly used in machine learning algorithms, where the precision and range are less important than the capability to store and manipulate as many values as possible. There are already some established formats implemented in hardware (e.g., IEEE 754 `Float16` ---available natively in Julia--- and Google Brain [`bfloat16`](https://en.wikipedia.org/wiki/Bfloat16_floating-point_format) ---provided by the Julia Package [`BFloat16s.jl`](https://github.com/JuliaMath/BFloat16s.jl)). There is, however, still a need for more flexibility to test the behavior of well-known and new algorithms with varying precisions and ranges. The parametric type of `MicroFloatingPoints.jl` can be put to good use there too, and has already been for the study of training neural networks [@arthurScalableImplementationRecursive2023a].
+Small floating-point formats are also increasingly used in machine learning algorithms, where the precision and range are less important than the capability to store and manipulate as many values as possible. There are already some established formats implemented in hardware (e.g., IEEE 754 `Float16` ---available natively in Julia--- and Google Brain [`bfloat16`](https://en.wikipedia.org/wiki/Bfloat16_floating-point_format) ---provided by the Julia Package [`BFloat16s.jl`](https://github.com/JuliaMath/BFloat16s.jl)). There is, however, still a need for more flexibility to test the behavior of well-known and new algorithms with varying precisions and ranges. The parametric type of `MicroFloatingPoints.jl` can be put to good use there too, and has already been for the study of training neural networks [@arthurScalableImplementationRecursive2023a]. However, since it represents all floating-point formats by a pair of 32 bit integers, it cannot compete with more specialized packages for applications that require storing and manipulating massive amounts of numbers. For such use cases, it should therefore be confined to preliminary investigations with more limited amounts of data. 
 
 # References
 
