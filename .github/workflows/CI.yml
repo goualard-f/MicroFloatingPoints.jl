@@ -70,5 +70,5 @@ jobs:
         run: |
           using Documenter: DocMeta, doctest
           using MicroFloatingPoints
-          DocMeta.setdocmeta!(MicroFloatingPoints, :DocTestSetup, :(using MicroFloatingPoints); recursive=true)
+          DocMeta.setdocmeta!(MicroFloatingPoints, :DocTestSetup, :(using MicroFloatingPoints, MicroFloatingPoints.MFPRandom, MicroFloatingPoints.MFPPlot, MicroFloatingPoints.MFPUtils); recursive=true)
           doctest(MicroFloatingPoints)
