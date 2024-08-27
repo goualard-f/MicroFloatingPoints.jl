@@ -4,7 +4,7 @@ using MicroFloatingPoints.MFPRandom
 using MicroFloatingPoints.MFPPlot
 using MicroFloatingPoints.MFPUtils
 
-DocMeta.setdocmeta!(MicroFloatingPoints, :DocTestSetup, :(using MicroFloatingPoints, MicroFloatingPoints.MFPRandom, MicroFloatingPoints.MFPPlot, MicroFloatingPoints.MFPUtils, PyPlot); recursive=true)
+DocMeta.setdocmeta!(MicroFloatingPoints, :DocTestSetup, :(using MicroFloatingPoints, MicroFloatingPoints.MFPRandom, MicroFloatingPoints.MFPPlot, MicroFloatingPoints.MFPUtils); recursive=true)
 
 makedocs(
     sitename="The MicroFloatingPoints Documentation",
