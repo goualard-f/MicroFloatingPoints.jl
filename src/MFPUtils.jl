@@ -34,7 +34,7 @@ For this function, the rightmost bit of the binary representation of a `Floatmu`
 
 # Examples
 
-```jldoctest
+```jldoctest; setup = :(using MicroFloatingPoints, MicroFloatingPoints.MFPUtils)
 julia> join(string.(reverse(vertical_popcount(Floatmu{2,2}[1.5])))) == bitstring(Floatmu{2,2}(1.5))
 true
 ```
