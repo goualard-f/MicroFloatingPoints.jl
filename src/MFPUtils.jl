@@ -40,7 +40,8 @@ true
 ```
 Note that, in the preceding example, we have to revert the array obtained from `vertical_popcount` because the number of times bit `i` is `1` is saved at position `i`. As a consequence, the value for the rightmost bit of a `Floatmu` appears at the leftmost position of the counting array.
 
-```jldoctest
+```jldoctest; setup = :(using MicroFloatingPoints, MicroFloatingPoints.MFPUtils)
+
 julia> println(vertical_popcount(Floatmu{2,2}[0.25,1.5,3.0]))
 [1, 2, 1, 1, 0]
 ```
