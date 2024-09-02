@@ -57,3 +57,4 @@ that provide plotting backends via package extensions.
 ## Project status
 
 The package is developed and has been tested on Julia 1.6 through 1.10.
+
