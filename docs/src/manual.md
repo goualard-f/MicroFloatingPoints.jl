@@ -347,6 +347,13 @@ julia> rand(Uniform(Floatmu{2,2}(-1.0),Floatmu{2,2}(1.0)))
 CurrentModule = MicroFloatingPoints.MFPPlot
 ```
 The `MicroFloatingPoints.MFPPlot` module offers some methods to easily represent floating-point numbers.
+It currently supports both `PyPlot` and `PythonPlot` backends, one of which must be loaded.
+To use `PythonPlot`, replace references to `PyPlot` with `PythonPlot` below and create the following alias
+for `plt`.
+
+```
+const plt = PythonCall.pyplot
+```
 
 ```@docs
 real_line
@@ -386,7 +393,7 @@ savefig("realline_Floatmu23b.svg"); nothing # hide
 ```
 
 ```@docs
-bits_histogram(T::Vector{Floatmu{szE,szf}}) where {szE,szf}
+bits_histogram
 ```
 
 ```@setup bits-histogram-example

@@ -44,18 +44,13 @@ floatmin(MuFP)
 ```
 ## Graphics with `MicroFloatingPoints.MFPPlot`
 
-The `MicroFloatingPoints` package offers several graphical functionnalities that are all available in `MicroFloatingPoints.MFPPlot`:
+The `MicroFloatingPoints` package offers several graphical functionalities that are all available in `MicroFloatingPoints.MFPPlot` when the plotting package `PyPlot` is also loaded:
 
 ```@repl realline
-using MicroFloatingPoints.MFPPlot
+using MicroFloatingPoints.MFPPlot, PyPlot
 ```
 
-Should you require additional graphical elements, you need to load explicitly the `PyPlot` package too:
-
-
-```@repl realline
-using PyPlot
-```
+Loading `PyPlot` will trigger the loading of a package extension. Alternatively, `PythonPlot` can also be used with the alias `const plt = pyplot`.
 
 To better assess what we can do with such a small type, let us display all finite representable values on the real line. The `MFPPlot` module has just the right method:
 ```@repl realline
