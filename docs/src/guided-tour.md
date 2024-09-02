@@ -1,7 +1,7 @@
 ```@meta
 DocTestSetup = quote
     using MicroFloatingPoints
-	using MicroFloatingPoints.MFPPlot, MicroFloatingPoints.MFPRandom
+	using MicroFloatingPoints.MFPPlot, MicroFloatingPoints.MFPRandom, PyPlot
 end
 CurrentModule = MicroFloatingPoints
 ```
@@ -85,7 +85,6 @@ MuFP = Floatmu{2,2}
 ```
 
 ```@example exhaustive-rounding
-using PyPlot
 plt.figure()
 plt.title("Exhaustive search for rounded sums in Floatmu{2,2}")
 TotalIterator = FloatmuIterator(-floatmax(MuFP),floatmax(MuFP))

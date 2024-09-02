@@ -1,7 +1,7 @@
 using Documenter, Random
 using MicroFloatingPoints
 using MicroFloatingPoints.MFPRandom
-using MicroFloatingPoints.MFPPlot
+using MicroFloatingPoints.MFPPlot, PyPlot
 using MicroFloatingPoints.MFPUtils
 
 DocMeta.setdocmeta!(MicroFloatingPoints, :DocTestSetup, :(using MicroFloatingPoints, MicroFloatingPoints.MFPRandom, MicroFloatingPoints.MFPPlot, MicroFloatingPoints.MFPUtils); recursive=true)
