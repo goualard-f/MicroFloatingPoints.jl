@@ -2,30 +2,25 @@
 
 using MicroFloatingPoints
 using PyPlot
+using MicroFloatingPoints.MFPPlot
 
-szE = 7 # Size of the exponent part
-szf = 16 # Size of the fractional part
-sfs = szf+1 # Size of the significand
-sz = szE+szf+1 # Size of the format
-MuFP = Floatmu{szE,szf}
-occurs = zeros(szf)
+E = 7 # Size of the exponent part
+f = 16 # Size of the fractional part
+p = f+1 # Size of the significand
+MuFP = Floatmu{E,f}
+T = zeros(f)
 
-intdom = 0:(2^sfs-1)
-divisor = MuFP(2.0^sfs)
-#intdom = 0:(2^(szf+1)-1)
-#divisor = MuFP(2.0^(szf+1)-1)
-for i in intdom
-    v = MuFP(i)/divisor
-    rs = bitstring(v)
-    for j = 1:szf
-        global occurs[j] += Int(rs[j+1+szE] == '1')
+for v in 0:(2^p-1)
+    d = MuFP(v)/2^p
+    fpart = bitstring(d)[2+E:end] # Isolating the fractional part
+    for j in 1:f
+        global T[j] += Int(fpart[j] == '1')
     end
 end
-occurs = map(x -> 100*(x/length(intdom)),occurs)
-plt.bar(1:szf,occurs)
-plt.yticks(0:10:100,[string(i) for i in 0.0:0.1:1.0])
-xticks = range(1,szf,length=szf)
-xtickslbl = reverse(map((x)->string(Int(x-1)),xticks))
-plt.xticks(xticks,xtickslbl)
-plt.savefig("random.7.16.svg")
+nT = map(x -> x/2^p,T)
+plt.bar(1:f,nT)
+plt.yticks(0:0.1:1)
+plt.xticks(1:f,reverse(map((x)->string(Int(x-1)),1:f)))
+#plt.savefig("random.7.8.svg")
+#plt.savefig("random.7.16.svg")
 plt.show()

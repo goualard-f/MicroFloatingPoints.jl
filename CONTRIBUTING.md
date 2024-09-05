@@ -10,7 +10,7 @@ Issues must be reported exclusively throught the [issue reporting system](https:
 
 The main objective of the package is to provide small IEEE 754-compliant floating-point number types that can be used as drop-in replacements for `Float32` and `Float64` in most code, and secondarily, to offer graphical methods to better understand what is going on when computing with these types. 
 
-Contributions that increate the performances, or further the compatibility of the `Floatmu{}` parametric type with the `Float32` and `Float64` standard types (e.g., through providing support for mathematical functions not already supported) are most welcome. So are graphical functions that provide a novel way of graphically visualizing floating-point computations, provided they make sense with the small `Floatmu{}` types.
+Contributions that increase the performances, or further the compatibility of the `Floatmu{}` parametric type with the `Float32` and `Float64` standard types (e.g., through providing support for mathematical functions not already supported) are most welcome. So are graphical functions that provide a novel way of graphically visualizing floating-point computations, provided they make sense with the small `Floatmu{}` types.
 
 ### What will not be considered
 
