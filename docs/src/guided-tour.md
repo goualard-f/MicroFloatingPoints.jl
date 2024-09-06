@@ -80,7 +80,7 @@ to, respectively, test whether the preceding computation needed rounding and to 
 [^1]: Though there is an *inexact flag*, there is no global variable storing the corresponding state.
 
 ```@setup exhaustive-rounding
-using MicroFloatingPoints
+using MicroFloatingPoints, PyPlot
 MuFP = Floatmu{2,2}
 ```
 
