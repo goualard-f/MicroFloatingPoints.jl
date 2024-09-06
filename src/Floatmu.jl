@@ -44,34 +44,35 @@ export reinterpret
 export fractional_even
 
 
-let inexact_flag = false
-    global set_inexact_or, inexact, reset_inexact
-    function set_inexact_or(v)
-        inexact_flag = inexact_flag || v
-    end
-    
-    @doc """
-        reset_inexact()
-    
-    Reset the global inexact flag to `false`.
-    
-    See also [`inexact`](@ref).
-    """
-    function reset_inexact()
-        inexact_flag = false; nothing
-    end
-    
-    @doc """
-        inexact()
+function set_inexact_or(v)
+    tls = task_local_storage()
+    inexact_flag = get(tls, :inexact_flag, false)::Bool
+    tls[:inexact_flag] = (inexact_flag || v)::Bool
+end
 
-    Return the value of the global inexact flag.
+@doc """
+    reset_inexact()
 
-    See also [`reset_inexact`](@ref).
+Reset the global inexact flag to `false`.
 
-    """
-    function inexact()
-        return inexact_flag
-    end
+See also [`inexact`](@ref).
+"""
+function reset_inexact()
+    task_local_storage(:inexact_flag, false)
+    return nothing
+end
+
+@doc """
+    inexact()
+
+Return the value of the global inexact flag.
+
+See also [`reset_inexact`](@ref).
+
+"""
+function inexact()
+    tls = task_local_storage()
+    return get(tls, :inexact_flag, false)::Bool
 end
 
 

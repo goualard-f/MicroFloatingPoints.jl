@@ -94,6 +94,9 @@ using PythonPlot
     @testset "sign tests" begin
         include("sign.jl")
     end
+    @testset "multitask inexact tests" begin
+        include("tasks.jl")
+    end
 end;
 
 
