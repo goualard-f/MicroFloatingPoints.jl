@@ -53,7 +53,7 @@ end
 @doc """
     reset_inexact()
 
-Reset the global inexact flag to `false`.
+Reset the inexact flag to `false`. Each [task](https://docs.julialang.org/en/v1/base/parallel/) possesses its own copy of the variable.
 
 See also [`inexact`](@ref).
 """
@@ -65,7 +65,7 @@ end
 @doc """
     inexact()
 
-Return the value of the global inexact flag.
+Return the value of the inexact flag. Each [task](https://docs.julialang.org/en/v1/base/parallel/) possesses its own copy of the variable.
 
 See also [`reset_inexact`](@ref).
 

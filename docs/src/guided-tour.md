@@ -77,7 +77,7 @@ You may also notice in the figure that the predecessor of `MuFP(2.0)`, which is 
 The type `MuFP` is so small that we can easily perform exhaustive searches with it. For example, we can display graphically whether the sum of any two finite `MuFP` floats needs to be rounded or not, using the [`inexact()`](@ref) and [`reset_inexact()`](@ref) methods
 to, respectively, test whether the preceding computation needed rounding and to reset the global *inexact flag[^1]:*
 
-[^1]: Though there is an *inexact flag*, there is no global variable storing the corresponding state.
+[^1]: More accurately, the *inexact flag* is local to each spawned [task](https://docs.julialang.org/en/v1/base/parallel/). That variable is not shared among tasks.
 
 ```@setup exhaustive-rounding
 using MicroFloatingPoints, PyPlot
