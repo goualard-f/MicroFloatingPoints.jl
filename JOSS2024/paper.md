@@ -33,14 +33,14 @@ using MicroFloatingPoints, PyPlot
 ```
 and we define a new IEEE 754-compliant floating-point type, say, with 7 bits for the exponent and 9 bits for the significand (i.e., 8 bits for the fractional part):
 ```julia
-E = 7 # Size of the exponent part
-f = 8 # Size of the fractional part
-p = f+1 # Size of the significand
-MuFP = Floatmu{E,f} # The new format
+const E = 7 # Size of the exponent part
+const f = 8 # Size of the fractional part
+const p = f+1 # Size of the significand
+const MuFP = Floatmu{E,f} # New IEEE 754 type
 ```
 We now divide all integers in $[0,2^p-1]$ by $2^p$ to obtain a `MuFP` float, for which we record the value of each bit of its fractional part. An array `T` with `f` cells will accumulate the number of occurrences of a '`1`' over all floats produced (specifically, `T[i]` will contain the number of times the `(f-i)`-th bit of the fractional part was a `1` so far ---with the 0-th bit being the rightmost one, as usual).
 ```julia
-T = zeros(f)
+T = zeros(UInt32, f)
 for v in 0:(2^p-1)
     d = MuFP(v)/2^p
     fpart = bitstring(d)[2+E:end] # Isolating the fractional part
