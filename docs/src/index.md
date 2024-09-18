@@ -2,7 +2,9 @@
 
 The `MicroFloatingPoints` package allows to manipulate small [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754)-compliant floating-point numbers, aka. [*minifloats*](https://en.wikipedia.org/wiki/Minifloat), whose formats are smaller or equal to the `Float32` format mandated by the standard.
 
-The library may serve to investigate and exemplify the behavior of IEEE 754 floating-point numbers in a systematic way through the use of very small formats.
+The library may serve to investigate and exemplify the behavior of IEEE 754 floating-point numbers in a systematic way through the use of very small formats. 
+There are already several Julia packages to manipulate *minifloats*, [`BFloat.jl`](https://github.com/tkgunaratne/BFloat.jl) and [`BFloat16s.jl`](https://github.com/JuliaMath/BFloat16s.jl), for example. These packages usually consider only one format ([Google's Brain Float16](https://cloud.google.com/tpu/docs/bfloat16), here) and are tailored for maximum performances, typically for machine learning applications. The `MicroFloatingPoints` package is different in that it trades performances for versatility: with it, you may easily define many different floating-point formats with varying precision and range to  test the impact of both parameters on your algorithms. 
+Whatever their actual format, all  `MicroFloatingPoints` *minifloat* types are represented as a pair of 32 bit integers. Consequently, this package is not suited for applications that seek to manipulate and store massive amounts of floating-point numbers at the expense of the precision and range.
 
 ## Presentation
 
@@ -59,7 +61,11 @@ Or, equivalently, via the Pkg API:
 julia> import Pkg; Pkg.add("MicroFloatingPoints")
 ```
 
-Note that the `matplotlib` Python package must be available through `PyCall`.
+Note that the `matplotlib` Python package must be available through `PyCall` or `PythonCall`.
+This is usually setup when installing [PyPlot.jl](https://github.com/JuliaPy/PyPlot.jl)
+or [PythonPlot.jl](https://github.com/JuliaPy/PythonPlot.jl), which are optional (weak) dependencies
+that provide plotting backends via package extensions.
+
 
 
 ## Tests

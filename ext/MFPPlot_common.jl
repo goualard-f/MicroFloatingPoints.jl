@@ -1,76 +1,14 @@
-# MFPPlot --
-#
-#	Copyright 2019--2023 University of Nantes, France.
-#
-#	This file is part of the MicroFloatingPoints library.
-#
-#	The MicroFloatingPoints library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public License as published
-# by the Free Software Foundation; either version 3 of the License, or (at your
-#	option) any later version.
-#	
-#	The MicroFloatingPoints library is distributed in the hope that it will be useful,
-# but	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-#	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-#	for more details.
-#	
-#	You should have received copies of the GNU General Public License and the
-#	GNU Lesser General Public License along with the MicroFloatingPoints Library.
-# If not,	see https://www.gnu.org/licenses/.
+# common include of both MFPPyPlot.jl and MFPPythonPlot.jl
+# For MFPPythonPlot.jl, `const plt = pyplot`.
 
-module MFPPlot
-
-using PyPlot
-using ..MicroFloatingPoints
-using ..MicroFloatingPoints.MFPUtils: vertical_popcount
+using MicroFloatingPoints
+using MicroFloatingPoints.MFPUtils: vertical_popcount
+import MicroFloatingPoints.MFPPlot: real_line, bits_histogram
 
 export real_line
 export bits_histogram
 
-"""
-    real_line(start::Floatmu{szE,szf}, stop::Floatmu{szE,szf};
-              ticks = true, 
-              fpcolorsub = "purple", fpcolornorm = "blue") where {szE,szf}
-    real_line(::Type{Floatmu{szE,szf}};
-              ticks = true, 
-              fpcolorsub = "purple", fpcolornorm = "blue",
-              fpcolorinf="orange") where {szE,szf}
-    real_line(T::Vector{Floatmu{szE,szf}};
-                   ticks = true, fpcolorsub = "purple", fpcolornorm = "blue",
-                   fpcolorinf="orange") where {szE,szf}
-
-Draw floats on the real line.
-
-The first version draws the real line between `start` and `stop` and displays all floating-point
-numbers with `sze` bits exponent and `szf` bits fractional part. The second version draws all finite 
-floating-point for the format `Floatmu{szE,szf}` and adds the infinities where the next/previous 
-float would be with the format `Floatmu{szE+1,szf}`. The third version draws all floats in the 
-vector `T`.
-
-In the first version, both parameters `start` and `stop` must be finite. An `ArgumentError` exception
-is raised otherwise. The same goes for all values in `T` for the third version.
-
-All versions return the figure used for the plot.
-
-The figure may be customized through the named parameters:
-- `ticks`: if `true`, draws a vertical line for each float and adds the value below. If
-    `false`, represent each float by a dot on the real line, without its value;
-- `fpcolorsub`: color of the line or dot used to represent subnormals;
-- `fpcolornorm`: color of the line or dot used to represent normal values;
-- `fpcolorinf` [for the second version only]: color of the line or dot used to represent infinite values.
-
-# Examples of calls
-
-```@repl
-real_line(-floatmax(Floatmu{2,2}),floatmax(Floatmu{2,2}));
-real_line(Floatmu{2,2});
-real_line(Floatmu{2,2}[-3.5,0.25,1.5,2.0])
-```
-"""
-function real_line end
-
-
-function real_line(T::Vector{Floatmu{szE,szf}};
+function real_line(::Val{@__MODULE__}, T::Vector{Floatmu{szE,szf}};
                    ticks = true, fpcolorsub = "purple", fpcolornorm = "blue",
                    fpcolorinf="orange") where {szE,szf}
     all(isfinite,T) || throw(ArgumentError("parameters must be finite"))
@@ -107,7 +45,7 @@ function real_line(T::Vector{Floatmu{szE,szf}};
 end
 
 
-function real_line(start::Floatmu{szE,szf}, stop::Floatmu{szE,szf};
+function real_line(::Val{@__MODULE__}, start::Floatmu{szE,szf}, stop::Floatmu{szE,szf};
                    ticks = true, fpcolorsub = "purple", fpcolornorm = "blue") where {szE,szf}
     # This version could be rewritten as:
     # `real_line(collect(FloatmuIterator(start,stop)))`
@@ -146,7 +84,8 @@ function real_line(start::Floatmu{szE,szf}, stop::Floatmu{szE,szf};
     return fig
 end 
 
-function real_line(::Type{Floatmu{szE,szf}};
+
+function real_line(::Val{@__MODULE__}, ::Type{Floatmu{szE,szf}};
                    ticks = true, fpcolorsub = "purple", fpcolornorm = "blue",
                    fpcolorinf="orange") where {szE,szf}
     posInf = nextfloat(Floatmu{szE+1,szf}(floatmax(Floatmu{szE,szf})))
@@ -161,17 +100,7 @@ function real_line(::Type{Floatmu{szE,szf}};
 end
 
 
-                   
-"""
-    bits_histogram(T::Vector{Floatmu{szE,szf}};
-                   signcolor = "magenta",
-                   expcolor = "darkolivegreen",
-                   fraccolor = "blue") where {szE,szf}
-
-Draw an histogram of the probability of each bit of the representation of a float
-to be `1` in the sample `T`.
-"""
-function bits_histogram(T::Vector{Floatmu{szE,szf}};
+function bits_histogram(::Val{@__MODULE__}, T::Vector{Floatmu{szE,szf}};
                         signcolor = "magenta",
                         expcolor = "darkolivegreen",
                         fraccolor = "blue") where {szE,szf}
@@ -190,5 +119,6 @@ function bits_histogram(T::Vector{Floatmu{szE,szf}};
     return nothing
 end
 
-
-end # Module
+function __init__()
+    MicroFloatingPoints.MFPPlot.register_backend(@__MODULE__)
+end

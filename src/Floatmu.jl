@@ -1,22 +1,22 @@
 # Floatmu --
 #
-#	Copyright 2019--2023 University of Nantes, France.
+# Copyright 2019--2024 University of Nantes, France.
 #
-#	This file is part of the MicroFloatingPoints library.
+# This file is part of the MicroFloatingPoints library.
 #
-#	The MicroFloatingPoints library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public License as published
-# by the Free Software Foundation; either version 3 of the License, or (at your
-#	option) any later version.
+# The MicroFloatingPoints library is free software; you can redistribute
+# it and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation; either version 3 of the
+# License, or (at your option) any later version.
+#
+# The MicroFloatingPoints library is distributed in the hope that it will be
+# useful, but	WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
 #	
-#	The MicroFloatingPoints library is distributed in the hope that it will be useful,
-# but	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-#	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-#	for more details.
-#	
-#	You should have received copies of the GNU General Public License and the
-#	GNU Lesser General Public License along with the MicroFloatingPoints Library.
-# If not,	see https://www.gnu.org/licenses/.
+# You should have received copies of the GNU General Public License and the
+# GNU Lesser General Public License along with the MicroFloatingPoints Library.
+# If not, see https://www.gnu.org/licenses/.
 
 
 #import Formatting
@@ -44,15 +44,36 @@ export reinterpret
 export fractional_even
 
 
-"""
-    inexact_flag
+function set_inexact_or(v)
+    tls = task_local_storage()
+    inexact_flag = get(tls, :inexact_flag, false)::Bool
+    tls[:inexact_flag] = (inexact_flag || v)::Bool
+end
 
-Flag set to `true` if the latest computation led to some rounding. This is a sticky flag, which must be
-explictly reset.
+@doc """
+    reset_inexact()
 
-See [`reset_inexact()`](@ref)
+Reset the inexact flag to `false`. Each [task](https://docs.julialang.org/en/v1/base/parallel/) possesses its own copy of the variable.
+
+See also [`inexact`](@ref).
 """
-inexact_flag = false
+function reset_inexact()
+    task_local_storage(:inexact_flag, false)
+    return nothing
+end
+
+@doc """
+    inexact()
+
+Return the value of the inexact flag. Each [task](https://docs.julialang.org/en/v1/base/parallel/) possesses its own copy of the variable.
+
+See also [`reset_inexact`](@ref).
+
+"""
+function inexact()
+    tls = task_local_storage()
+    return get(tls, :inexact_flag, false)::Bool
+end
 
 
 @doc raw"""
@@ -95,7 +116,7 @@ struct Floatmu{szE, szf} <: AbstractFloat
         @assert szf isa Integer "Fractional part size must be an integer!"
         @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
         (val,rnd) = float64_to_uint32mu(Float64(π), szE, szf)
-        global inexact_flag = inexact_flag || true
+        set_inexact_or(true)
         return new{szE,szf}(val,rnd)
     end
     function Floatmu{szE,szf}(x::Float64) where {szE,szf}
@@ -103,7 +124,7 @@ struct Floatmu{szE, szf} <: AbstractFloat
         @assert szf isa Integer "Fractional part size must be an integer!"
         @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
         (val,rnd) = float64_to_uint32mu(x, szE, szf)
-        global inexact_flag = inexact_flag || (rnd != 0)
+        set_inexact_or(rnd != 0)
         return new{szE,szf}(val,rnd)
     end
     function Floatmu{szE,szf}(x::Float32) where {szE,szf}
@@ -111,7 +132,7 @@ struct Floatmu{szE, szf} <: AbstractFloat
         @assert szf isa Integer "Fractional part size must be an integer!"
         @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
         (val,rnd) = float64_to_uint32mu(Float64(x), szE, szf)
-        global inexact_flag = inexact_flag || (rnd != 0)
+        set_inexact_or(rnd != 0)
         return new{szE,szf}(val,rnd)
     end
     function Floatmu{szE,szf}(x::Float16) where {szE,szf}
@@ -119,7 +140,7 @@ struct Floatmu{szE, szf} <: AbstractFloat
         @assert szf isa Integer "Fractional part size must be an integer!"
         @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
         (val,rnd) = float64_to_uint32mu(Float64(x), szE, szf)
-        global inexact_flag = inexact_flag || (rnd != 0)
+        set_inexact_or(rnd != 0)
         return new{szE,szf}(val,rnd)
     end
     function Floatmu{szE,szf}(x::Int64) where {szE,szf}
@@ -127,7 +148,7 @@ struct Floatmu{szE, szf} <: AbstractFloat
         @assert szf isa Integer "Fractional part size must be an integer!"
         @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
         (val,rnd) = float64_to_uint32mu(Float64(x), szE, szf)
-        global inexact_flag = inexact_flag || (rnd != 0)
+        set_inexact_or(rnd != 0)
         return new{szE,szf}(val,rnd)
     end
     function Floatmu{szE,szf}(x::Floatmu{szEb,szfb}) where {szE,szf,szEb,szfb}
@@ -135,7 +156,7 @@ struct Floatmu{szE, szf} <: AbstractFloat
         @assert szf isa Integer "Fractional part size must be an integer!"
         @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
         (val,rnd) = float64_to_uint32mu(convert(Float64,x),szE,szf)
-        global inexact_flag = inexact_flag || (rnd != 0)
+        set_inexact_or(rnd != 0)
         return new{szE,szf}(val, rnd)
     end
     """
@@ -157,7 +178,7 @@ struct Floatmu{szE, szf} <: AbstractFloat
         @assert szf isa Integer "Fractional part size must be an integer!"
         @assert szE >= 2 && szE <= 8 && szf >= 2 && szf <= 23 "Exponent size must be in [2,8] and fractional part size in [2,23]!"
         (val,rnd) = x
-        global inexact_flag = inexact_flag || (rnd != 0)
+        set_inexact_or(rnd != 0)
         return new{szE,szf}(val,rnd)
     end
 end
@@ -1229,25 +1250,6 @@ julia> errorsign(Floatmu{2, 2}(-2.8))
 function errorsign(x::Floatmu{szE,szf}) where {szE,szf}
     return x.inexact
 end
-
-
-"""
-    reset_inexact()
-
-Reset the global inexact flag to `false`.
-
-"""
-function reset_inexact()
-    global inexact_flag = false;
-    nothing
-end
-
-"""
-    inexact()
-
-Return the value of the global inexact flag.
-"""
-inexact() = return inexact_flag
 
 
 """

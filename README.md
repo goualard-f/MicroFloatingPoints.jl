@@ -31,7 +31,22 @@ Or, equivalently, via the Pkg API:
 julia> import Pkg; Pkg.add("MicroFloatingPoints")
 ```
 
-Note that the `matplotlib` Python package must be available through `PyCall`.
+Optionally, to enable plotting, install either one of PyPlot.jl or PythonPlot.jl as follows.
+
+```julia-repl
+julia> import Pkg; Pkg.add("PyPlot")
+```
+
+OR
+
+```julia-repl
+julia> import Pkg; Pkg.add("PythonPlot")
+```
+
+Note that the `matplotlib` Python package must be available through `PyCall` or `PythonCall`.
+This is usually setup when installing [PyPlot.jl](https://github.com/JuliaPy/PyPlot.jl)
+or [PythonPlot.jl](https://github.com/JuliaPy/PythonPlot.jl), which are optional (weak) dependencies
+that provide plotting backends via package extensions.
 
 
 ## Documentation
@@ -42,3 +57,4 @@ Note that the `matplotlib` Python package must be available through `PyCall`.
 ## Project status
 
 The package is developed and has been tested on Julia 1.6 through 1.10.
+

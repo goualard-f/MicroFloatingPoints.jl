@@ -1,7 +1,7 @@
 ```@meta
 DocTestSetup = quote
     using MicroFloatingPoints
-	using MicroFloatingPoints.MFPPlot, MicroFloatingPoints.MFPRandom
+	using MicroFloatingPoints.MFPPlot, MicroFloatingPoints.MFPRandom, PyPlot
 end
 CurrentModule = MicroFloatingPoints
 ```
@@ -18,9 +18,6 @@ The `MicroFloatingPoints` package is organized into four modules:
 
 After having correctly installed the package (see [Installation](@ref)), we start our tour by loading the `MicroFloatingPoints` module:
 
-```@setup realline
-using PyPlot
-```
 
 ```@repl realline
 using MicroFloatingPoints
@@ -47,9 +44,16 @@ floatmin(MuFP)
 ```
 ## Graphics with `MicroFloatingPoints.MFPPlot`
 
+The `MicroFloatingPoints` package offers several graphical functionalities that are all available in `MicroFloatingPoints.MFPPlot` when the plotting package `PyPlot` is also loaded:
+
+```@repl realline
+using MicroFloatingPoints.MFPPlot, PyPlot
+```
+
+Loading `PyPlot` will trigger the loading of a package extension. Alternatively, `PythonPlot` can also be used with the alias `const plt = pyplot`.
+
 To better assess what we can do with such a small type, let us display all finite representable values on the real line. The `MFPPlot` module has just the right method:
 ```@repl realline
-using MicroFloatingPoints.MFPPlot
 real_line(-floatmax(MuFP),floatmax(MuFP));
 savefig("mufp_realline.svg"); nothing # hide
 ```
@@ -71,15 +75,16 @@ You may also notice in the figure that the predecessor of `MuFP(2.0)`, which is 
 ### Exhaustive search for rounded additions
 
 The type `MuFP` is so small that we can easily perform exhaustive searches with it. For example, we can display graphically whether the sum of any two finite `MuFP` floats needs to be rounded or not, using the [`inexact()`](@ref) and [`reset_inexact()`](@ref) methods
-to, respectively, test whether the preceding computation needed rounding and to reset the global *inexact flag:*
+to, respectively, test whether the preceding computation needed rounding and to reset the global *inexact flag[^1]:*
+
+[^1]: More accurately, the *inexact flag* is local to each spawned [task](https://docs.julialang.org/en/v1/base/parallel/). That variable is not shared among tasks.
 
 ```@setup exhaustive-rounding
-using MicroFloatingPoints
+using MicroFloatingPoints, PyPlot
 MuFP = Floatmu{2,2}
 ```
 
 ```@example exhaustive-rounding
-using PyPlot
 plt.figure()
 plt.title("Exhaustive search for rounded sums in Floatmu{2,2}")
 TotalIterator = FloatmuIterator(-floatmax(MuFP),floatmax(MuFP))
@@ -101,7 +106,7 @@ let i = 1
     end
 end
 V = collect(TotalIterator)
-imshow(Z,origin="lower", cmap="Oranges")
+plt.imshow(Z,origin="lower", cmap="Oranges")
 plt.yticks(0:(length(V)-1),[string(V[i]) for i in 1:length(V)])
 plt.xticks(0:(length(V)-1),[string(V[i]) for i in 1:length(V)],rotation=90);
 savefig("exhaustive-rounding.svg"); nothing #hide
@@ -159,14 +164,12 @@ savefig("randfreq-bfloat16.svg"); nothing # hide
 
 The `BFloat16` and `Float16` formats both represent floating-point numbers with 16 bits. The `BFloat16` trades precision for a larger range. Let us compare the results obtained when summing the values of a vector with both types:
 
-```@setup mixed-precision
+```@example mixed-precision
 using MicroFloatingPoints
 using Random
 using Distributions
 Random.seed!(42)
-```
 
-```@example mixed-precision
 BFloat16 = Floatmu{8,7}
 MuFloat16 = Floatmu{5,10} 
 T64 = [rand() for i in 1:1000]

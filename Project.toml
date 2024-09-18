@@ -1,16 +1,23 @@
 name = "MicroFloatingPoints"
 uuid = "6e0295d3-a2ae-4d9e-ab31-7b55fc0f4333"
 authors = ["Frédéric Goualard <Frederic.Goualard@univ-nantes.fr>"]
-version = "1.5.3"
+version = "2.0.0"
 
 [deps]
-Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
-PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
-SuiteSparse_jll = "bea87d4a-7f5b-5778-9afe-8cc45184846c"
+
+[weakdeps]
+PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
+PythonPlot = "274fc56d-3b97-40fa-a1cd-1b4a50311bf9"
+
+[extensions]
+MFPPyPlot = "PyPlot"
+MFPPythonPlot = "PythonPlot"
 
 [compat]
-Documenter = "^1"
-PyPlot = "^2"
-julia = "^1.10"
+Printf = "1.10"
+PyPlot = "2"
+PythonPlot = "1"
+Random = "1.10"
+julia = "1.10"

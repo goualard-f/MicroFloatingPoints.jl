@@ -235,7 +235,7 @@ eligible_step
 
 We have seen in section [Creating a `Floatmu` float](@ref) that each `Floatmu` retains the information whether the value it was created from required rounding or not.
 
-In addition to that mechanism, the `MicroFloatingPoints` module keeps a global variable that is set to `true` every time a `Floatmu` is created and rounding takes place. That variable is *sticky* (once true, it stays true until reset explictly to `false`). It can be checked with the `inexact()` method and reset with the `reset_inexact()` method.
+In addition to that mechanism, the `MicroFloatingPoints` module keeps a global state that is set to `true` every time a `Floatmu` is created and rounding takes place. It has a *sticky* behavior (once true, it stays true until reset explictly to `false`). It can be checked with the `inexact()` method and reset with the `reset_inexact()` method.
 
 ```@docs
 inexact()
@@ -347,6 +347,13 @@ julia> rand(Uniform(Floatmu{2,2}(-1.0),Floatmu{2,2}(1.0)))
 CurrentModule = MicroFloatingPoints.MFPPlot
 ```
 The `MicroFloatingPoints.MFPPlot` module offers some methods to easily represent floating-point numbers.
+It currently supports both `PyPlot` and `PythonPlot` backends, one of which must be loaded.
+To use `PythonPlot`, replace references to `PyPlot` with `PythonPlot` below and create the following alias
+for `plt`.
+
+```
+const plt = PythonCall.pyplot
+```
 
 ```@docs
 real_line
@@ -386,7 +393,7 @@ savefig("realline_Floatmu23b.svg"); nothing # hide
 ```
 
 ```@docs
-bits_histogram(T::Vector{Floatmu{szE,szf}}) where {szE,szf}
+bits_histogram
 ```
 
 ```@setup bits-histogram-example

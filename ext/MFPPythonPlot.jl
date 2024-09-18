@@ -1,4 +1,4 @@
-# MicroFloatingPoints --
+# MFPPlot --
 #
 # Copyright 2019--2024 University of Nantes, France.
 #
@@ -18,26 +18,11 @@
 # GNU Lesser General Public License along with the MicroFloatingPoints Library.
 # If not, see https://www.gnu.org/licenses/.
 
-module MicroFloatingPoints
+module MFPPythonPlot
 
-export Floatmu
-export μ, λ, NaNμ, Infμ
-export FloatmuIterator
-export isinexact, errorsign, reset_inexact, inexact
-export Emax, Emin, nb_fp_numbers, bias
-export eligible_step
-export fractional_even
+using PythonPlot
+const plt = PythonPlot.pyplot
 
-include("Floatmu.jl")
+include("MFPPlot_common.jl")
 
-# Submodule MFPUtils
-include("MFPUtils.jl")
-
-# Stub MFPPlot, see ../ext/MFPPlot.jl
-include("MFPPlotStub.jl")
-
-# Submodule MFPRandom
-include("MFPRandom.jl")
-
-
-end # module
+end # Module

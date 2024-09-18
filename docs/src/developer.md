@@ -29,7 +29,6 @@ For both constructors, `dummy` may be anything and serves only to avoid ambiguit
 
 ```@docs
 nb_fp_numbers(a::Floatmu{szE,szf}, b::Floatmu{szE,szf}) where {szE,szf}
-MicroFloatingPoints.inexact_flag
 MicroFloatingPoints.double_fields(x::Float64)
 MicroFloatingPoints.roundfrac(f,szf)
 MicroFloatingPoints.float64_to_uint32mu(x::Float64,szE,szf)
