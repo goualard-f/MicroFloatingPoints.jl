@@ -1,5 +1,5 @@
 ---
-title: '\textsf{MicroFloatingPoints.jl}: providing very small IEEE 754-compliant floating-point types'
+title: 'MicroFloatingPoints.jl: providing very small IEEE 754-compliant floating-point types'
 tags:
   - Julia
   - floating-point arithmetic
