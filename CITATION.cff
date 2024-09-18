@@ -1,0 +1,28 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Goualard
+  given-names: Frédéric
+  orcid: "https://orcid.org/0000-0002-1798-1568"
+doi: 10.5281/zenodo.13777404
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Goualard
+    given-names: Frédéric
+    orcid: "https://orcid.org/0000-0002-1798-1568"
+  date-published: 2024-09-18
+  doi: 10.21105/joss.07050
+  issn: 2475-9066
+  issue: 101
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 7050
+  title: "MicroFloatingPoints.jl: providing very small
+    IEEE 754-compliant floating-point types"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.07050"
+  volume: 9
+title: "MicroFloatingPoints.jl: providing very small
+  IEEE 754-compliant floating-point types"
