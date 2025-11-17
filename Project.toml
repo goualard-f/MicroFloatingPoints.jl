@@ -1,7 +1,7 @@
 name = "MicroFloatingPoints"
 uuid = "6e0295d3-a2ae-4d9e-ab31-7b55fc0f4333"
 authors = ["Frédéric Goualard <Frederic.Goualard@univ-nantes.fr>"]
-version = "2.0.0"
+version = "2.1.0"
 
 [deps]
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"

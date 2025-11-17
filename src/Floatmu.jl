@@ -1,6 +1,6 @@
 # Floatmu --
 #
-# Copyright 2019--2024 University of Nantes, France.
+# Copyright 2019--2025 University of Nantes, France.
 #
 # This file is part of the MicroFloatingPoints library.
 #
