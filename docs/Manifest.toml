@@ -294,7 +294,7 @@ version = "0.1.2"
 deps = ["Printf", "Random"]
 path = "/home/goualard-f/.julia/dev/MicroFloatingPoints"
 uuid = "6e0295d3-a2ae-4d9e-ab31-7b55fc0f4333"
-version = "2.0.0"
+version = "2.1.0"
 
     [deps.MicroFloatingPoints.extensions]
     MFPPyPlot = "PyPlot"
