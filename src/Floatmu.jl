@@ -206,6 +206,7 @@ function reinterpret(::Type{Floatmu{szE,szf}}, x::UInt64) where {szE,szf}
 end 
 
 
+Base.promote_rule(::Type{Bool}, ::Type{Floatmu{szE, szf}}) where {szE, szf} = Floatmu{szE, szf}
 promote_rule(::Type{T},::Type{Floatmu{szE, szf}}) where {T<:Integer,szE,szf} = Floatmu{szE,szf}
 promote_rule(::Type{Float64},::Type{Floatmu{szE, szf}}) where {szE,szf} = Float64
 promote_rule(::Type{Float32},::Type{Floatmu{szE, szf}}) where {szE,szf} = Float32
@@ -884,11 +885,11 @@ function convert(::Type{Float32}, x::Floatmu{szE,szf}) where {szE, szf}
     return Float32(convert(Float64,x))
 end
 
-function convert(::Type{BigFloat}, x::Floatmu{szE,szf}) where {szE, szf}
-    return BigFloat(convert(Float64,x))
+function convert(::Type{Base.BigFloat}, x::Floatmu{szE,szf}) where {szE, szf}
+    return Base.BigFloat(convert(Float64,x))
 end
 
-function convert(::Type{Floatmu{szE,szf}}, x::BigFloat)  where {szE,szf}
+function convert(::Type{Floatmu{szE,szf}}, x::Base.BigFloat)  where {szE,szf}
     return Floatmu{szE,szf}(float64_to_uint32mu(Float64(x),szE,szf),nothing)
 end
 
@@ -908,7 +909,7 @@ end
 Float16(x::Floatmu{szE,szf}) where {szE,szf} = convert(Float16,x)
 Float32(x::Floatmu{szE,szf}) where {szE,szf} = convert(Float32,x)
 Float64(x::Floatmu{szE,szf}) where {szE,szf} = convert(Float64,x)
-BigFloat(x::Floatmu{szE,szf}) where {szE,szf} = convert(BigFloat,x)
+Base.BigFloat(x::Floatmu{szE,szf}) where {szE,szf} = convert(Base.BigFloat,x)
 
 function round(x::Floatmu{szE,szf},r::RoundingMode) where {szE,szf}
     return Floatmu{szE,szf}(round(Float64(x),r))
