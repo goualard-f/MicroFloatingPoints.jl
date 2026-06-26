@@ -21,6 +21,7 @@
 
 #import Formatting
 import Printf.@sprintf
+import Base.BigFloat
 import Base.convert, Base.show, Base.Float16, Base.Float32, Base.Float64
 import Base.sign, Base.signbit, Base.bitstring
 import Base.typemin, Base.typemax, Base.maxintfloat, Base.ldexp, Base.eps
