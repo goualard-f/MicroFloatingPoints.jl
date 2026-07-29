@@ -1,0 +1,6 @@
+2025-11-17  Frédéric Goualard  <Frederic.Goualard@univ-nantes.fr>
+
+	* src/Floatmu.jl:
+	+ Qualified BigFloat as Base.BigFloat.
+	+ Added promotion for the Bool type (see Issue #16)
+
