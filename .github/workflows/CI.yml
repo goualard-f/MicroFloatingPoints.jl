@@ -54,6 +54,13 @@ jobs:
         with:
           version: '1'
       - uses: julia-actions/cache@v2
+     - name: Build PyCall
+        run: |
+          julia --project=docs/ -e '
+            using Pkg
+            ENV["PYTHON"] = "python"
+            Pkg.build("PyCall")'
+			
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
         run: |
