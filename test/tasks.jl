@@ -11,7 +11,7 @@ end
 task_B = Threads.@spawn begin
     inexact_seen = false
     for i in 0.1:0.1:0.5
-        @info "Task B, $i sec:" MicroFloatingPoints.inexact()
+        #@info "Task B, $i sec:" MicroFloatingPoints.inexact()
         if MicroFloatingPoints.inexact()
             inexact_seen = true
             MicroFloatingPoints.reset_inexact()

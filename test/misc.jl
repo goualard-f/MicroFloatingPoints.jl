@@ -38,6 +38,8 @@ end;
     @test_throws DomainError exponent(F823(NaN))
     @test_throws DomainError exponent(F823(0.0))
     @test_throws DomainError exponent(F823(-0.0))
+    FP43 = Floatmu{4,3}
+    @test exponent(nextfloat(FP43(0.0))) == -9
 end;
 
 @testset "significand" begin

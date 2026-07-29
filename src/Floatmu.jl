@@ -579,9 +579,9 @@ function exponent(x::Floatmu{szE,szf}) where {szE,szf}
     xs >= exponent_mask(Floatmu{szE,szf}) && throw(DomainError(x, "Cannot be NaN or Inf."))
     k = Int(xs >> szf)
     if k == 0 # x is subnormal
-        xs == 0 && throw(DomainError(x, "Cannot be subnormal converted to 0."))
-        m = leading_zeros(xs) - szE
-        k = 1 - m
+        xs == 0 && throw(DomainError(x, "Cannot be ±0.0."))
+        # Computing the exponent of the significand once it is normalized
+        k = (32-szf) - leading_zeros(xs) # 32 == sizeof(UInt32)<<3 
     end
     return k - Int(bias(Floatmu{szE,szf}))
 end
