@@ -26,6 +26,8 @@ using MicroFloatingPoints.MFPUtils
 using MicroFloatingPoints.MFPRandom
 using MicroFloatingPoints.MFPPlot
 
+using Pkg
+using PyCall
 try
     pyimport("matplotlib")
 catch e
