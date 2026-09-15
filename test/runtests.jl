@@ -27,7 +27,7 @@ using MicroFloatingPoints.MFPRandom
 using MicroFloatingPoints.MFPPlot
 
 # Test loading MFPPythonPlot
-using PythonPlot
+using PyPlot
 
 # Calling "julia runtests.jl" launches all tests in the directory.
 @testset ExtendedTestSet "All the tests" begin
