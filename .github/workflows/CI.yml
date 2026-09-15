@@ -7,8 +7,6 @@ on:
   pull_request:
   workflow_dispatch:
 concurrency:
-  # Skip intermediate builds: always.
-  # Cancel intermediate builds: only if it is a pull request build.
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
@@ -36,7 +34,6 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       
-      # Set up clean system Python + Matplotlib
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -45,18 +42,9 @@ jobs:
 
       - uses: julia-actions/cache@v2
 
-      # Ensure PYTHON is set when buildpkg runs so PyCall builds against the active Python
       - uses: julia-actions/julia-buildpkg@v1
         env:
           PYTHON: python
-
-      - name: Rebuild PyCall against setup-python
-        shell: julia --project=@. --color=yes {0}
-        env:
-          PYTHON: python
-        run: |
-          using Pkg
-          Pkg.build("PyCall")
 
       - uses: julia-actions/julia-runtest@v1
         env:
@@ -76,7 +64,6 @@ jobs:
         with:
           version: '1'
 
-      # Set up clean system Python + Matplotlib for Docs
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -92,7 +79,6 @@ jobs:
           using Pkg
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
-          Pkg.build("PyCall")
       - uses: julia-actions/julia-buildpkg@v1
         env:
           PYTHON: python
