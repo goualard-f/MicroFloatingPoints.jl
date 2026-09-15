@@ -26,16 +26,7 @@ using MicroFloatingPoints.MFPUtils
 using MicroFloatingPoints.MFPRandom
 using MicroFloatingPoints.MFPPlot
 
-using Pkg
-using PyCall
-
-try
-    pyimport("matplotlib")
-catch
-    using Conda
-    Conda.add("matplotlib")
-    Pkg.build("PyCall")
-end
+pyimport_conda("matplotlib.pyplot", "matplotlib")
 pyimport("matplotlib").use("Agg")
 # Test loading MFPPythonPlot
 using PyPlot
