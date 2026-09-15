@@ -46,6 +46,16 @@ jobs:
         env:
           PYTHON: python
 
+      # Re-build all manifest packages against system Python to overwrite cached paths
+      - name: Rebuild dependencies against system Python
+        shell: julia --project=@. --color=yes {0}
+        env:
+          PYTHON: python
+        run: |
+          using Pkg
+          Pkg.instantiate()
+          Pkg.build()
+
       - uses: julia-actions/julia-runtest@v1
         env:
           PYTHON: python
@@ -79,6 +89,7 @@ jobs:
           using Pkg
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
+          Pkg.build()
       - uses: julia-actions/julia-buildpkg@v1
         env:
           PYTHON: python
