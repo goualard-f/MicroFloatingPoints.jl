@@ -26,19 +26,11 @@ using MicroFloatingPoints.MFPUtils
 using MicroFloatingPoints.MFPRandom
 using MicroFloatingPoints.MFPPlot
 
-using Pkg
+
 using PyCall
-try
-    pyimport("matplotlib")
-catch e
-    # Rebuild PyCall if the dynamically linked library is missing or broken
-    Pkg.build("PyCall")
-    using PyCall
-    pyimport_conda("matplotlib.pyplot", "matplotlib")
-end
+using PyPlot
 pyimport("matplotlib").use("Agg")
 # Test loading MFPPythonPlot
-using PyPlot
 
 # Calling "julia runtests.jl" launches all tests in the directory.
 @testset ExtendedTestSet "All the tests" begin
