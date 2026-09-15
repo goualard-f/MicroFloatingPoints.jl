@@ -1,6 +1,6 @@
 # Floatmu --
 #
-# Copyright 2019--2025 University of Nantes, France.
+# Copyright 2019--2026 University of Nantes, France.
 #
 # This file is part of the MicroFloatingPoints library.
 #
@@ -213,6 +213,9 @@ promote_rule(::Type{Float64},::Type{Floatmu{szE, szf}}) where {szE,szf} = Float6
 promote_rule(::Type{Float32},::Type{Floatmu{szE, szf}}) where {szE,szf} = Float32
 promote_rule(::Type{Float16},::Type{Floatmu{szE, szf}}) where {szE,szf} = Floatmu{max(5,szE),max(10,szf)}
 promote_rule(::Type{Floatmu{szEa, szfa}},::Type{Floatmu{szEb, szfb}}) where {szEa,szfa, szEb, szfb} = Floatmu{max(szEa,szEb),max(szfa,szfb)}
+
+promote_rule(::Type{BigInt}, ::Type{Floatmu{szE,szf}}) where {szE,szf} = BigFloat
+promote_rule(::Type{BigFloat},::Type{Floatmu{szE, szf}}) where {szE,szf} = BigFloat
 
 # Mask to retrieve the fractional part (internal use)
 significand_mask(::Type{Floatmu{szE,szf}}) where {szE, szf}  = UInt32((UInt32(1) << szf) - 1)
