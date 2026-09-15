@@ -44,11 +44,14 @@ jobs:
       # -------------------------------------------------------------
       # MODIFICATION START: Pre-build PyCall & pass MPLBACKEND
       # -------------------------------------------------------------
-      - name: Build PyCall for tests
+- name: Build PyCall for tests
         shell: julia --project=@. --color=yes {0}
         run: |
           using Pkg
-          Pkg.build("PyCall")
+          Pkg.instantiate()
+          if "PyCall" in keys(Pkg.project().dependencies) || haskey(Pkg.dependencies(), Base.UUID("4382227f-5777-509d-a156-f8e1576579ad"))
+              Pkg.build("PyCall")
+          end
 
       - uses: julia-actions/julia-runtest@v1
         env:
