@@ -40,7 +40,23 @@ jobs:
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
+
+      # -------------------------------------------------------------
+      # MODIFICATION START: Pre-build PyCall & pass MPLBACKEND
+      # -------------------------------------------------------------
+      - name: Build PyCall for tests
+        shell: julia --project=@. --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.build("PyCall")
+
       - uses: julia-actions/julia-runtest@v1
+        env:
+          MPLBACKEND: Agg
+      # -------------------------------------------------------------
+      # MODIFICATION END
+      # -------------------------------------------------------------
+
   docs:
     name: Documentation
     runs-on: ubuntu-latest
@@ -68,6 +84,8 @@ jobs:
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
       - name: Run doctests
         shell: julia --project=docs --color=yes {0}
+        env:
+          MPLBACKEND: Agg
         run: |
           using Documenter: DocMeta, doctest
           using MicroFloatingPoints
