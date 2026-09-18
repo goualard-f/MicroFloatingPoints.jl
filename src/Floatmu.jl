@@ -919,9 +919,9 @@ function round(x::Floatmu{szE,szf},r::RoundingMode) where {szE,szf}
     return Floatmu{szE,szf}(round(Float64(x),r))
 end
 
-for Ty in (Int8, Int32, Int64, UInt8, UInt16, UInt32, UInt64)
+for Ty in (Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64)
     @eval begin
-        trunc(::Type{$Ty}, x::Floatmu{szE,szf}) where {szE,szf} = $Ty(Float64(x))
+        trunc(::Type{$Ty}, x::Floatmu{szE,szf}) where {szE,szf} = $Ty(trunc(Float64(x)))
     end
 end
 
