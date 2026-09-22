@@ -1,6 +1,6 @@
 # runtests.jl --
 #
-# Copyright 2019--2024 University of Nantes, France.
+# Copyright 2019--2026 University of Nantes, France.
 #
 # This file is part of the MicroFloatingPoints library.
 #
@@ -36,6 +36,9 @@ pyimport("matplotlib").use("Agg")
 @testset ExtendedTestSet "All the tests" begin
     @testset "Arithmetic tests" begin
         include("arithmetic.jl")
+    end
+    @testset "Trigonometric tests" begin
+        include("trig.jl")
     end
     @testset "Constructor tests" begin
         include("constructors.jl")

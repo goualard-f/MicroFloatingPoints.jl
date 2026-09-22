@@ -36,6 +36,7 @@ import Base.Math.significand, Base.Math.significand_mask, Base.Math.exponent
 import Base: +, -, *, /, ^
 import Base: ==, !=, <, <=, >, >=
 import Base: cos, sin, tan, exp, log, sqrt, log2, sincos, sincospi
+import Base: fma, rem, mod, atan
 import Base.iterate, Base.length, Base.eltype
 import Base.prevfloat, Base.nextfloat
 import Base.decompose
@@ -1500,6 +1501,14 @@ end
 @FloatmuOp2Factory(-)
 @FloatmuOp2Factory(*)
 @FloatmuOp2Factory(/)
+@FloatmuOp2Factory(rem)
+@FloatmuOp2Factory(mod)
+@FloatmuOp2Factory(atan)
+@FloatmuOp2Factory(^)
+
+fma(x::Floatmu{szE,szf}, y::Floatmu{szE,szf}, z::Floatmu{szE,szf}) where {szE,szf} =
+    Floatmu{szE,szf}(fma(Float64(x), Float64(y), Float64(z)))
+
 
 macro BoolOp2Factory(op::Symbol)
     return quote
