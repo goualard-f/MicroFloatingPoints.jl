@@ -45,12 +45,15 @@ jobs:
       - uses: julia-actions/julia-buildpkg@v1
         env:
           PYTHON: python
-
+					CONDA_JL_HOME: ""
+					MPLBACKEND: Agg
       # Re-build all manifest packages against system Python to overwrite cached paths
       - name: Rebuild dependencies against system Python
         shell: julia --project=@. --color=yes {0}
         env:
           PYTHON: python
+					CONDA_JL_HOME: ""
+					MPLBACKEND: Agg
         run: |
           using Pkg
           Pkg.instantiate()
@@ -59,6 +62,7 @@ jobs:
       - uses: julia-actions/julia-runtest@v1
         env:
           PYTHON: python
+					CONDA_JL_HOME: ""
           MPLBACKEND: Agg
 
   docs:
