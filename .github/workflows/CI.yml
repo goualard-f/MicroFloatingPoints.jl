@@ -11,11 +11,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 
-# Global environment settings applied across ALL steps
 env:
   PYTHON: python
   CONDA_JL_HOME: ""
   MPLBACKEND: Agg
+  JULIA_PKG_PRECOMPILE_AUTO: "0"
 
 jobs:
   test:
@@ -50,22 +50,44 @@ jobs:
       - name: Install Python dependencies
         run: pip install matplotlib
 
+      # Purge runner cache paths before restoring to guarantee clean state
+      - name: Wipe runner cache directories
+        run: |
+          rm -rf ~/.julia/compiled
+          rm -rf ~/.julia/scratchspaces
+          rm -rf ~/.julia/prefs
+          rm -rf ~/.julia/conda
+
       - uses: julia-actions/cache@v2
 
-      # Remove cached Conda directory if it was restored by the cache action
-      - name: Clean stale Conda artifacts
-        run: rm -rf ~/.julia/conda ~/.julia/prefs/Conda
+      # Clean restored cache artifacts that retain hardcoded runner paths
+      - name: Purge corrupt precompiled artifacts
+        run: |
+          rm -rf ~/.julia/compiled
+          rm -rf ~/.julia/scratchspaces
+          rm -rf ~/.julia/prefs
+          rm -rf ~/.julia/conda
 
       - uses: julia-actions/julia-buildpkg@v1
 
-      - name: Rebuild dependencies against system Python
+      - name: Rebuild PyCall and fresh precompile
         shell: julia --project=@. --color=yes {0}
         run: |
           using Pkg
           Pkg.instantiate()
-          Pkg.build()
+          
+          # Force PyCall build against setup-python
+          deps = Pkg.dependencies()
+          pycall_pkg = filter(p -> p.second.name == "PyCall", deps)
+          if !isempty(pycall_pkg)
+              pycall_uuid = first(keys(pycall_pkg))
+              Pkg.build(Pkg.PackageSpec(uuid=pycall_uuid))
+          end
+          
+          # Force clean precompilation
+          Pkg.precompile()
 
-      - uses: julia-actions/julia-runtest@v1
+      - uses: julia-runtest@v1
 
   docs:
     name: Documentation
@@ -88,10 +110,21 @@ jobs:
       - name: Install Python dependencies
         run: pip install matplotlib
 
+      - name: Purge runner cache directories
+        run: |
+          rm -rf ~/.julia/compiled
+          rm -rf ~/.julia/scratchspaces
+          rm -rf ~/.julia/prefs
+          rm -rf ~/.julia/conda
+
       - uses: julia-actions/cache@v2
 
-      - name: Clean stale Conda artifacts
-        run: rm -rf ~/.julia/conda ~/.julia/prefs/Conda
+      - name: Purge corrupt precompiled artifacts
+        run: |
+          rm -rf ~/.julia/compiled
+          rm -rf ~/.julia/scratchspaces
+          rm -rf ~/.julia/prefs
+          rm -rf ~/.julia/conda
 
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
@@ -99,7 +132,15 @@ jobs:
           using Pkg
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
-          Pkg.build()
+          
+          deps = Pkg.dependencies()
+          pycall_pkg = filter(p -> p.second.name == "PyCall", deps)
+          if !isempty(pycall_pkg)
+              pycall_uuid = first(keys(pycall_pkg))
+              Pkg.build(Pkg.PackageSpec(uuid=pycall_uuid))
+          end
+          
+          Pkg.precompile()
 
       - uses: julia-actions/julia-buildpkg@v1
 
