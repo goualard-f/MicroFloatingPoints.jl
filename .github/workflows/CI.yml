@@ -6,17 +6,9 @@ on:
     tags: ['*']
   pull_request:
   workflow_dispatch:
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
-
-env:
-  PYTHON: python
-  CONDA_JL_HOME: ""
-  MPLBACKEND: Agg
-  JULIA_PKG_PRECOMPILE_AUTO: "0"
-
 jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
@@ -37,7 +29,6 @@ jobs:
           - x64
     steps:
       - uses: actions/checkout@v4
-
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
@@ -46,48 +37,29 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Install Python dependencies
         run: pip install matplotlib
 
-      # Purge runner cache paths before restoring to guarantee clean state
-      - name: Wipe runner cache directories
-        run: |
-          rm -rf ~/.julia/compiled
-          rm -rf ~/.julia/scratchspaces
-          rm -rf ~/.julia/prefs
-          rm -rf ~/.julia/conda
-
       - uses: julia-actions/cache@v2
 
-      # Clean restored cache artifacts that retain hardcoded runner paths
-      - name: Purge corrupt precompiled artifacts
-        run: |
-          rm -rf ~/.julia/compiled
-          rm -rf ~/.julia/scratchspaces
-          rm -rf ~/.julia/prefs
-          rm -rf ~/.julia/conda
-
       - uses: julia-actions/julia-buildpkg@v1
+        env:
+          PYTHON: python
 
-      - name: Rebuild PyCall and fresh precompile
+      # Re-build all manifest packages against system Python to overwrite cached paths
+      - name: Rebuild dependencies against system Python
         shell: julia --project=@. --color=yes {0}
+        env:
+          PYTHON: python
         run: |
           using Pkg
           Pkg.instantiate()
-          
-          # Force PyCall build against setup-python
-          deps = Pkg.dependencies()
-          pycall_pkg = filter(p -> p.second.name == "PyCall", deps)
-          if !isempty(pycall_pkg)
-              pycall_uuid = first(keys(pycall_pkg))
-              Pkg.build(Pkg.PackageSpec(uuid=pycall_uuid))
-          end
-          
-          # Force clean precompilation
-          Pkg.precompile()
+          Pkg.build()
 
       - uses: julia-actions/julia-runtest@v1
+        env:
+          PYTHON: python
+          MPLBACKEND: Agg
 
   docs:
     name: Documentation
@@ -98,7 +70,6 @@ jobs:
       statuses: write
     steps:
       - uses: actions/checkout@v4
-
       - uses: julia-actions/setup-julia@v2
         with:
           version: '1'
@@ -106,51 +77,31 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Install Python dependencies
         run: pip install matplotlib
 
-      - name: Purge runner cache directories
-        run: |
-          rm -rf ~/.julia/compiled
-          rm -rf ~/.julia/scratchspaces
-          rm -rf ~/.julia/prefs
-          rm -rf ~/.julia/conda
-
       - uses: julia-actions/cache@v2
-
-      - name: Purge corrupt precompiled artifacts
-        run: |
-          rm -rf ~/.julia/compiled
-          rm -rf ~/.julia/scratchspaces
-          rm -rf ~/.julia/prefs
-          rm -rf ~/.julia/conda
-
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
+        env:
+          PYTHON: python
         run: |
           using Pkg
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
-          
-          deps = Pkg.dependencies()
-          pycall_pkg = filter(p -> p.second.name == "PyCall", deps)
-          if !isempty(pycall_pkg)
-              pycall_uuid = first(keys(pycall_pkg))
-              Pkg.build(Pkg.PackageSpec(uuid=pycall_uuid))
-          end
-          
-          Pkg.precompile()
-
+          Pkg.build()
       - uses: julia-actions/julia-buildpkg@v1
-
+        env:
+          PYTHON: python
       - uses: julia-actions/julia-docdeploy@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
-
       - name: Run doctests
         shell: julia --project=docs --color=yes {0}
+        env:
+          PYTHON: python
+          MPLBACKEND: Agg
         run: |
           using Documenter: DocMeta, doctest
           using MicroFloatingPoints
