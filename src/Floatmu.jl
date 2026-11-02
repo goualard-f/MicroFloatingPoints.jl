@@ -110,7 +110,7 @@ struct Floatmu{szE, szf} <: AbstractFloat
     # Representation of the Floatmu as a 32 bits unsigned integer.
     # The various fields (s,e,f) are aligned to the right of the integer.
     v::UInt32
-    # Is the value an approximation by default (-1), excess (+1) or the exact value (0)
+    # Is the value an approximation by default (-1), excess (+1) or the exact value (0)?
     inexact::Int32
 
     function Floatmu{szE,szf}(::Irrational{:π}) where {szE,szf}
@@ -799,8 +799,12 @@ function float64_to_uint32mu(x::Float64,szE,szf)::Tuple{UInt32,Int64}
                     # (but normal in double precision, see comment above) so
                     # we shift the fractional part such that the resulting
                     # exponent is Emin(Floatmu{szE,szf})
-                    shift = Emin(Floatmu{szE,szf}) - (e - 1023)
-                    newf = ((f >> 1) + 2^51) >> (shift-1) # Adding hidden bit
+                    shift = Emin(Floatmu{szE,szf}) - (e - Base.exponent_bias(Float64))
+                    full = f + 2^52 # Adding hidden bit
+                    newf = full >> shift
+                    # Keep the bits shifted out as a sticky bit, so that a value
+                    # just above a midpoint is not rounded as the midpoint
+                    newf |= ifelse(full & ((one(full) << shift) - 1) != 0, one(newf), zero(newf))
                     (newf, addE, inexact) = roundfrac(newf,szf)
                     if addE != 0 # The rounded number is normal
                         return ((s << (UInt32(szE)+UInt32(szf))) | (UInt32(1) << UInt32(szf)) | newf,
@@ -811,7 +815,7 @@ function float64_to_uint32mu(x::Float64,szE,szf)::Tuple{UInt32,Int64}
                     end
                 end
             else # Rounding to a normal float in the format `Floatmu{szE,szf}`
-                newe = (e - UInt32(1023)) + bias(Floatmu{szE,szf})
+                newe = (e - UInt32(Base.exponent_bias(Float64))) + bias(Floatmu{szE,szf})
                 (newf, addE, inexact) = roundfrac(f,szf)
                 return (s << (UInt32(szE)+UInt32(szf)) | ((newe+addE) << UInt32(szf)) | newf,
                         x < 0 ? -inexact : inexact)
